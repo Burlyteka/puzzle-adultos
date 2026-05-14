@@ -89,10 +89,11 @@
   /* SPLASH SCREEN */
   #splash {
     position: fixed; inset: 0; z-index: 9999;
-    background: linear-gradient(135deg, #3d6b3d, #5a7a5a, #4a7060);
+    background: linear-gradient(135deg, #0d1f0d, #1e3a1e);
     display: flex; align-items: center; justify-content: center;
-    animation: splashFade 0.6s ease 2s forwards;
+    transition: opacity 0.5s ease;
   }
+  #splash.hiding { opacity: 0; pointer-events: none; }
   #splash-inner { text-align: center; color: white; animation: splashIn 0.8s ease; }
   #splash-inner h1 { font-family: 'Playfair Display', serif; font-size: 2.4rem; margin: 12px 0 6px; }
   #splash-inner p { font-size: 1rem; opacity: 0.85; letter-spacing: 1px; }
@@ -103,6 +104,64 @@
   @keyframes splashIn { from { opacity:0; transform: translateY(20px); } to { opacity:1; transform: translateY(0); } }
   @keyframes splashFade { to { opacity:0; pointer-events:none; } }
   @keyframes dotBounce { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+
+  /* ONBOARDING SCREEN */
+  #onboarding {
+    position: fixed; inset: 0; z-index: 9998;
+    background: linear-gradient(135deg, #0d1f0d, #1e3a1e);
+    display: none; align-items: center; justify-content: center;
+    padding: 24px;
+  }
+  #onboarding.visible { display: flex; }
+  #onboarding-inner {
+    text-align: center; color: white;
+    width: 100%; max-width: 360px;
+    animation: splashIn 0.5s ease;
+  }
+  #onboarding-inner .ob-emoji { font-size: 3rem; margin-bottom: 16px; }
+  #onboarding-inner h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.9rem; margin-bottom: 8px; line-height: 1.3;
+  }
+  #onboarding-inner .ob-sub {
+    font-size: 0.95rem; opacity: 0.7; margin-bottom: 28px; letter-spacing: 0.5px;
+  }
+  #ob-name-input {
+    width: 100%; padding: 16px 20px; font-size: 1.2rem;
+    border: 2px solid rgba(255,255,255,0.3); border-radius: 16px;
+    background: rgba(255,255,255,0.1); color: white;
+    font-family: 'Nunito', sans-serif; outline: none;
+    text-align: center; margin-bottom: 24px;
+    transition: border-color 0.2s;
+  }
+  #ob-name-input::placeholder { color: rgba(255,255,255,0.4); }
+  #ob-name-input:focus { border-color: rgba(255,255,255,0.7); background: rgba(255,255,255,0.15); }
+  .ob-lang-row { display: flex; gap: 12px; justify-content: center; margin-bottom: 28px; }
+  .ob-lang-btn {
+    padding: 12px 24px; border-radius: 30px; border: 2px solid rgba(255,255,255,0.3);
+    background: rgba(255,255,255,0.1); color: white; cursor: pointer;
+    font-family: 'Nunito', sans-serif; font-size: 1rem; font-weight: 600;
+    transition: all 0.2s; letter-spacing: 0.3px;
+  }
+  .ob-lang-btn.active { background: rgba(255,255,255,0.25); border-color: rgba(255,255,255,0.8); }
+  .ob-lang-btn:hover { background: rgba(255,255,255,0.2); }
+  #ob-begin-btn {
+    width: 100%; padding: 16px; font-size: 1.1rem; font-weight: 700;
+    font-family: 'Nunito', sans-serif; border: none; border-radius: 16px;
+    background: linear-gradient(135deg, #5a7a5a, #4a7060);
+    color: white; cursor: pointer; transition: all 0.2s;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+  }
+  #ob-begin-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(0,0,0,0.4); }
+
+  /* CHANGE NAME BUTTON */
+  .change-name-btn {
+    background: rgba(255,255,255,0.12); border: 1.5px solid rgba(255,255,255,0.3);
+    color: rgba(255,255,255,0.8); padding: 4px 10px; border-radius: 16px;
+    cursor: pointer; font-size: 0.75rem; font-family: 'Nunito', sans-serif;
+    transition: all 0.2s; white-space: nowrap; margin-top: 4px; display: block;
+  }
+  .change-name-btn:hover { background: rgba(255,255,255,0.22); color: white; }
 
   /* HEADER */
   header {
@@ -874,8 +933,22 @@
   <div id="splash-inner">
     <div style="font-size:3.5rem">🌿</div>
     <h1>Puzzle Bundle</h1>
-    <p>Mindful · Positive · Calm</p>
+    <p>Your calm moment</p>
     <div id="splash-dots"><span></span><span></span><span></span></div>
+  </div>
+</div>
+
+<div id="onboarding">
+  <div id="onboarding-inner">
+    <div class="ob-emoji">🌿</div>
+    <h2 id="ob-question">What's your name?</h2>
+    <p class="ob-sub" id="ob-sub">We'll personalize your experience</p>
+    <input id="ob-name-input" type="text" maxlength="30" placeholder="Your name..." autocomplete="off" spellcheck="false">
+    <div class="ob-lang-row">
+      <button class="ob-lang-btn active" id="ob-en-btn" onclick="obSetLang('en')">🇺🇸 English</button>
+      <button class="ob-lang-btn" id="ob-es-btn" onclick="obSetLang('es')">🇪🇸 Español</button>
+    </div>
+    <button id="ob-begin-btn" onclick="completeOnboarding()">Let's begin →</button>
   </div>
 </div>
 
@@ -886,7 +959,7 @@
     <div class="leaf" style="font-size:1.2rem; display:inline; margin-right:8px;">🌿</div>
     <span id="h-title">Puzzle Bundle</span>
     <div class="subtitle" id="h-subtitle">Mindful · Positive · Affirmative</div>
-    <!-- subtitle intentionally left in English as default -->
+    <button class="change-name-btn" id="change-name-btn" onclick="changeName()" style="display:none">✏️ <span id="change-name-label">Change name</span></button>
   </div>
   <div class="header-controls">
     <button class="hbtn active" onclick="setFontSize('normal')" id="fs-normal">A</button>
@@ -1462,7 +1535,7 @@ function toggleLang() {
 function applyLang() {
   document.getElementById('h-title').textContent = t('h-title');
   document.getElementById('h-subtitle').textContent = t('h-subtitle');
-  document.getElementById('home-title').textContent = t('home-title');
+  if (!localStorage.getItem('pb_name')) document.getElementById('home-title').textContent = t('home-title');
   document.getElementById('home-desc').innerHTML = t('home-desc');
   document.getElementById('lang-btn').textContent = lang === 'en' ? '🌐 ES' : '🌐 EN';
   // puzzle headers — use tx() so extraT keys (trivia, breath) also resolve
@@ -1484,6 +1557,8 @@ function applyLang() {
   renderStreak();
   renderStats();
   renderDailyQuote();
+  renderGreeting();
+  showChangeNameBtn();
 }
 
 function renderHomeCards() {
@@ -3539,14 +3614,106 @@ function showCelebration(msg) {
   setTimeout(() => el.remove(), 2800);
 }
 
+// ===================== ONBOARDING & GREETING =====================
+let obLang = 'en';
+
+function obSetLang(l) {
+  obLang = l;
+  document.getElementById('ob-en-btn').classList.toggle('active', l === 'en');
+  document.getElementById('ob-es-btn').classList.toggle('active', l === 'es');
+  document.getElementById('ob-question').textContent = l === 'es' ? '¿Cómo te llamas?' : "What's your name?";
+  document.getElementById('ob-sub').textContent = l === 'es' ? 'Personalizaremos tu experiencia' : 'We\'ll personalize your experience';
+  document.getElementById('ob-name-input').placeholder = l === 'es' ? 'Tu nombre...' : 'Your name...';
+  document.getElementById('ob-begin-btn').textContent = l === 'es' ? '¡Empecemos →' : "Let's begin →";
+}
+
+function completeOnboarding() {
+  const input = document.getElementById('ob-name-input');
+  const name = (input.value || '').trim();
+  if (!name) { input.focus(); input.style.borderColor = '#e74c3c'; setTimeout(() => input.style.borderColor = '', 800); return; }
+  localStorage.setItem('pb_name', name);
+  localStorage.setItem('pb_lang', obLang);
+  lang = obLang;
+  document.getElementById('onboarding').classList.remove('visible');
+  renderGreeting();
+  renderHomeCards();
+  applyLang();
+  renderDailyQuote();
+  renderStreak();
+  renderStats();
+  showChangeNameBtn();
+}
+
+function getGreeting(name) {
+  const h = new Date().getHours();
+  if (lang === 'es') {
+    const period = h < 12 ? 'Buenos días' : h < 19 ? 'Buenas tardes' : 'Buenas noches';
+    const emoji = h < 12 ? '🌿' : h < 19 ? '☀️' : '🌙';
+    return `${period}, ${name} ${emoji}`;
+  } else {
+    const period = h < 12 ? 'Good morning' : h < 19 ? 'Good afternoon' : 'Good evening';
+    const emoji = h < 12 ? '🌿' : h < 19 ? '☀️' : '🌙';
+    return `${period}, ${name} ${emoji}`;
+  }
+}
+
+function renderGreeting() {
+  const name = localStorage.getItem('pb_name');
+  const el = document.getElementById('home-title');
+  if (!el) return;
+  if (name) {
+    el.textContent = getGreeting(name);
+  } else {
+    el.textContent = t('home-title');
+  }
+}
+
+function showChangeNameBtn() {
+  const btn = document.getElementById('change-name-btn');
+  const lbl = document.getElementById('change-name-label');
+  if (!btn) return;
+  const name = localStorage.getItem('pb_name');
+  if (name) {
+    btn.style.display = 'block';
+    if (lbl) lbl.textContent = lang === 'es' ? 'Cambiar nombre' : 'Change name';
+  } else {
+    btn.style.display = 'none';
+  }
+}
+
+function changeName() {
+  localStorage.removeItem('pb_name');
+  localStorage.removeItem('pb_lang');
+  document.getElementById('change-name-btn').style.display = 'none';
+  obSetLang(lang);
+  document.getElementById('ob-name-input').value = '';
+  document.getElementById('onboarding').classList.add('visible');
+}
+
 // ===================== INIT =====================
-setTimeout(() => { const s = document.getElementById('splash'); if(s) s.style.display='none'; }, 2700);
 loadPrefs();
-renderHomeCards();
-applyLang();
-renderDailyQuote();
-renderStreak();
-renderStats();
+
+// Read pb_lang set by onboarding (takes priority over puzzleBundle_prefs lang)
+const _pbLang = localStorage.getItem('pb_lang');
+if (_pbLang) lang = _pbLang;
+
+setTimeout(() => {
+  const splash = document.getElementById('splash');
+  if (splash) { splash.classList.add('hiding'); setTimeout(() => splash.style.display = 'none', 500); }
+  const pbName = localStorage.getItem('pb_name');
+  if (pbName) {
+    renderGreeting();
+    renderHomeCards();
+    applyLang();
+    renderDailyQuote();
+    renderStreak();
+    renderStats();
+    showChangeNameBtn();
+  } else {
+    obSetLang(lang);
+    document.getElementById('onboarding').classList.add('visible');
+  }
+}, 2000);
 
 // ===================== SERVICE WORKER =====================
 if ('serviceWorker' in navigator) {
