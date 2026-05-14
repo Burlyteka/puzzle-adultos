@@ -2,8 +2,24 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Puzzle Bundle — Mindful & Positive</title>
+
+<!-- PWA Manifest -->
+<link rel="manifest" href="/manifest.json">
+
+<!-- PWA / App meta -->
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Puzzle Bundle">
+<meta name="theme-color" content="#5a7a5a">
+<meta name="application-name" content="Puzzle Bundle">
+<meta name="description" content="11 actividades mentales: sopas de letras, sudoku, trivia, laberintos y más.">
+
+<!-- iOS touch icon (se usa si no hay icon-*.png, funciona con un SVG inline) -->
+<link rel="apple-touch-icon" href="icon.svg">
+<link rel="icon" type="image/svg+xml" href="icon.svg">
 <style>
   :root {
     --bg: #f5f0e8;
@@ -1407,8 +1423,11 @@ function applyLang() {
 
 function renderHomeCards() {
   const grid = document.getElementById('puzzle-grid');
+  if (!grid) return;
   grid.innerHTML = '';
-  t('cards').forEach(card => {
+  const cards = T[lang] && T[lang]['cards'];
+  if (!cards || !Array.isArray(cards)) return;
+  cards.forEach(card => {
     const div = document.createElement('div');
     div.className = 'puzzle-card';
     div.innerHTML = `<div class="icon">${card.icon}</div><h3>${card.title}</h3><p>${card.desc}</p>`;
@@ -3256,4 +3275,201 @@ function drawJigsawImage(canvas) {
   const flowers = [[w*0.12,h*0.75,'#EF5350'],[w*0.32,h*0.8,'#EC407A'],[w*0.52,h*0.77,'#AB47BC'],[w*0.72,h*0.82,'#FFA726'],[w*0.88,h*0.76,'#EF5350']];
   flowers.forEach(([fx, fy, fc]) => {
     ctx.strokeStyle = '#2E7D32'; ctx.lineWidth = Math.max(2,w*0.006);
-    ctx.beginPath(); ctx.moveTo(fx, 
+    ctx.beginPath(); ctx.moveTo(fx, fy+6); ctx.lineTo(fx, fy+h*0.08); ctx.stroke();
+    for (let i = 0; i < 6; i++) {
+      const a = (i/6)*Math.PI*2;
+      ctx.fillStyle = fc;
+      ctx.beginPath(); ctx.ellipse(fx+Math.cos(a)*w*0.035, fy+Math.sin(a)*w*0.035, w*0.025, w*0.015, a, 0, Math.PI*2); ctx.fill();
+    }
+    ctx.fillStyle = '#FDD835';
+    ctx.beginPath(); ctx.arc(fx, fy, w*0.025, 0, Math.PI*2); ctx.fill();
+  });
+  ctx.fillStyle = '#5D4037'; ctx.fillRect(w*0.46, h*0.3, w*0.06, h*0.3);
+  ctx.fillStyle = '#388E3C';
+  ctx.beginPath(); ctx.arc(w*0.49, h*0.28, w*0.1, 0, Math.PI*2); ctx.fill();
+  ctx.fillStyle = '#4CAF50';
+  ctx.beginPath(); ctx.arc(w*0.44, h*0.34, w*0.07, 0, Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.arc(w*0.54, h*0.34, w*0.07, 0, Math.PI*2); ctx.fill();
+}
+
+function setJigsawDiff(n, btn) {
+  jigsawN = n;
+  btn.closest('.diff-selector').querySelectorAll('.diff-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  initJigsaw();
+}
+
+function initJigsaw() {
+  jigsawBoardSize = Math.min(320, window.innerWidth - 64);
+  jigsawPlaced = 0;
+  jigsawTotal = jigsawN * jigsawN;
+  jigsawPieceW = Math.floor(jigsawBoardSize / jigsawN);
+  jigsawPieceH = Math.floor(jigsawBoardSize / jigsawN);
+  const hc = document.getElementById('jigsaw-hint-canvas');
+  hc.width = jigsawBoardSize; hc.height = jigsawBoardSize;
+  drawJigsawImage(hc);
+  jigsawImageURL = hc.toDataURL();
+  const preview = document.getElementById('jigsaw-preview');
+  preview.src = jigsawImageURL; preview.style.display = 'block';
+  preview.style.maxWidth = '140px';
+  const board = document.getElementById('jigsaw-board');
+  board.style.width = jigsawBoardSize + 'px';
+  board.style.height = jigsawBoardSize + 'px';
+  board.innerHTML = '';
+  document.getElementById('jigsaw-message').textContent = '';
+  const positions = [];
+  for (let r = 0; r < jigsawN; r++)
+    for (let c = 0; c < jigsawN; c++) positions.push({r, c});
+  shuffle(positions);
+  positions.forEach((pos, idx) => {
+    const {r, c} = pos;
+    const piece = document.createElement('div');
+    piece.className = 'jigsaw-piece';
+    piece.dataset.tr = r; piece.dataset.tc = c;
+    piece.style.width = jigsawPieceW + 'px';
+    piece.style.height = jigsawPieceH + 'px';
+    piece.style.backgroundImage = `url(${jigsawImageURL})`;
+    piece.style.backgroundSize = jigsawBoardSize + 'px ' + jigsawBoardSize + 'px';
+    piece.style.backgroundPosition = `-${c * jigsawPieceW}px -${r * jigsawPieceH}px`;
+    const sx = Math.floor(Math.random() * (jigsawBoardSize - jigsawPieceW));
+    const sy = Math.floor(Math.random() * (jigsawBoardSize - jigsawPieceH));
+    piece.style.left = sx + 'px'; piece.style.top = sy + 'px';
+    piece.style.zIndex = idx + 2;
+    piece.addEventListener('mousedown', jigsawMouseDown);
+    piece.addEventListener('touchstart', jigsawTouchStart, { passive: false });
+    board.appendChild(piece);
+  });
+}
+
+function jigsawSnapCheck(piece) {
+  const tx = parseInt(piece.dataset.tc) * jigsawPieceW;
+  const ty = parseInt(piece.dataset.tr) * jigsawPieceH;
+  const cx = parseInt(piece.style.left);
+  const cy = parseInt(piece.style.top);
+  const thresh = jigsawPieceW * 0.32;
+  if (Math.abs(cx - tx) < thresh && Math.abs(cy - ty) < thresh) {
+    piece.style.left = tx + 'px'; piece.style.top = ty + 'px';
+    piece.classList.add('placed'); piece.style.zIndex = 1;
+    jigsawPlaced++;
+    if (jigsawPlaced === jigsawTotal) {
+      document.getElementById('jigsaw-message').textContent = lang === 'es' ? '🎉 ¡Rompecabezas completo!' : '🎉 Puzzle complete!';
+      saveRecord('jigsaw', jigsawPlaced, jigsawTotal);
+      showToast(t('well-done'));
+    }
+    return true;
+  }
+  return false;
+}
+
+function jigsawMouseDown(e) {
+  const piece = e.currentTarget;
+  if (piece.classList.contains('placed')) return;
+  e.preventDefault();
+  const board = document.getElementById('jigsaw-board');
+  const br = board.getBoundingClientRect();
+  jigsawDragging = piece;
+  jigsawDragOffX = e.clientX - br.left - parseInt(piece.style.left);
+  jigsawDragOffY = e.clientY - br.top - parseInt(piece.style.top);
+  piece.classList.add('dragging'); piece.style.zIndex = 1000;
+  document.addEventListener('mousemove', jigsawMouseMove);
+  document.addEventListener('mouseup', jigsawMouseUp);
+}
+
+function jigsawMouseMove(e) {
+  if (!jigsawDragging) return;
+  const br = document.getElementById('jigsaw-board').getBoundingClientRect();
+  let x = e.clientX - br.left - jigsawDragOffX;
+  let y = e.clientY - br.top - jigsawDragOffY;
+  x = Math.max(0, Math.min(jigsawBoardSize - jigsawPieceW, x));
+  y = Math.max(0, Math.min(jigsawBoardSize - jigsawPieceH, y));
+  jigsawDragging.style.left = x + 'px'; jigsawDragging.style.top = y + 'px';
+}
+
+function jigsawMouseUp() {
+  if (!jigsawDragging) return;
+  document.removeEventListener('mousemove', jigsawMouseMove);
+  document.removeEventListener('mouseup', jigsawMouseUp);
+  const piece = jigsawDragging; jigsawDragging = null;
+  piece.classList.remove('dragging');
+  if (!jigsawSnapCheck(piece)) piece.style.zIndex = 2;
+}
+
+function jigsawTouchStart(e) {
+  const piece = e.currentTarget;
+  if (piece.classList.contains('placed')) return;
+  e.preventDefault();
+  const t = e.touches[0];
+  const br = document.getElementById('jigsaw-board').getBoundingClientRect();
+  jigsawDragging = piece;
+  jigsawDragOffX = t.clientX - br.left - parseInt(piece.style.left);
+  jigsawDragOffY = t.clientY - br.top - parseInt(piece.style.top);
+  piece.classList.add('dragging'); piece.style.zIndex = 1000;
+  document.addEventListener('touchmove', jigsawTouchMove, { passive: false });
+  document.addEventListener('touchend', jigsawTouchEnd);
+}
+
+function jigsawTouchMove(e) {
+  if (!jigsawDragging) return;
+  e.preventDefault();
+  const tc = e.touches[0];
+  const br = document.getElementById('jigsaw-board').getBoundingClientRect();
+  let x = tc.clientX - br.left - jigsawDragOffX;
+  let y = tc.clientY - br.top - jigsawDragOffY;
+  x = Math.max(0, Math.min(jigsawBoardSize - jigsawPieceW, x));
+  y = Math.max(0, Math.min(jigsawBoardSize - jigsawPieceH, y));
+  jigsawDragging.style.left = x + 'px'; jigsawDragging.style.top = y + 'px';
+}
+
+function jigsawTouchEnd() {
+  if (!jigsawDragging) return;
+  document.removeEventListener('touchmove', jigsawTouchMove);
+  document.removeEventListener('touchend', jigsawTouchEnd);
+  const piece = jigsawDragging; jigsawDragging = null;
+  piece.classList.remove('dragging');
+  if (!jigsawSnapCheck(piece)) piece.style.zIndex = 2;
+}
+
+// ===================== UTILS =====================
+function shuffle(arr) {
+  for (let i=arr.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[arr[i],arr[j]]=[arr[j],arr[i]];}
+  return arr;
+}
+
+// Hook scramble/wordfill to save records on check
+const _origCheckScr = checkAllScramble;
+checkAllScramble = function() {
+  _origCheckScr();
+  const s = document.querySelector('#scramble-score .score-badge');
+  if (s) {
+    const parts = s.textContent.split(' ');
+    saveRecord('scramble', parseInt(parts[1])||0, parseInt(parts[3])||0);
+  }
+};
+
+const _origCheckWF = checkAllWordFill;
+checkAllWordFill = function() {
+  _origCheckWF();
+  const s = document.querySelector('#wf-score .score-badge');
+  if (s) {
+    const parts = s.textContent.split(' ');
+    saveRecord('wf', parseInt(parts[1])||0, parseInt(parts[3])||0);
+  }
+};
+
+// ===================== INIT =====================
+loadPrefs();
+renderHomeCards();
+applyLang();
+renderDailyQuote();
+renderStreak();
+renderStats();
+
+// ===================== SERVICE WORKER =====================
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js').catch(() => {});
+  });
+}
+</script>
+</body>
+</html>
