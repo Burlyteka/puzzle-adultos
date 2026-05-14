@@ -1578,6 +1578,7 @@ function t(key) { return T[lang][key] || key; }
 
 function toggleLang() {
   lang = lang === 'es' ? 'en' : 'es';
+  localStorage.setItem('pb_lang', lang);
   savePrefs();
   applyLang();
   // re-init current puzzle if any
@@ -1593,7 +1594,8 @@ function toggleLang() {
 
 function applyLang() {
   document.getElementById('h-title').textContent = t('h-title');
-  document.getElementById('h-subtitle').textContent = t('h-subtitle');
+  const hSub = document.getElementById('h-subtitle');
+  if (hSub) hSub.textContent = t('h-subtitle');
   if (!localStorage.getItem('pb_name')) document.getElementById('home-title').textContent = t('home-title');
   document.getElementById('home-desc').innerHTML = t('home-desc');
   document.getElementById('lang-btn').textContent = lang === 'en' ? '🌐 ES' : '🌐 EN';
@@ -2402,6 +2404,12 @@ function initMaze() {
   drawMaze();
   drawPlayer();
 
+  mazeCanvas.removeEventListener('mousedown', mazeStartDraw);
+  mazeCanvas.removeEventListener('mousemove', mazeMoveDraw);
+  mazeCanvas.removeEventListener('mouseup', mazeEndDraw);
+  mazeCanvas.removeEventListener('touchstart', mazeTouchStart);
+  mazeCanvas.removeEventListener('touchmove', mazeTouchMove);
+  mazeCanvas.removeEventListener('touchend', mazeEndDraw);
   mazeCanvas.addEventListener('mousedown', mazeStartDraw);
   mazeCanvas.addEventListener('mousemove', mazeMoveDraw);
   mazeCanvas.addEventListener('mouseup', mazeEndDraw);
@@ -2560,7 +2568,7 @@ function canMove(from, to) {
 
 function solveMaze() {
   // BFS
-  const visited = Array.from({length:mazeRows},()=>Array(mazeRows).fill(false));
+  const visited = Array.from({length:mazeRows},()=>Array(mazeCols).fill(false));
   const parent = Array.from({length:mazeRows},()=>Array(mazeCols).fill(null));
   const queue = [{r:0,c:0}];
   visited[0][0]=true;
@@ -2854,7 +2862,7 @@ function checkCrossword() {
       inp.classList.add('error-cell'); inp.classList.remove('correct-cell');
     }
   });
-  if (correct === total) showToast(t('well-done'));
+  if (correct === total) { saveRecord('cw', correct, total); showToast(t('well-done')); }
 }
 
 // ===================== MEMORY GAME =====================
@@ -3707,7 +3715,7 @@ function submitCode() {
   const code = (input.value || '').trim().toUpperCase();
   const errEl = document.getElementById('access-error');
   if (!VALID_CODES.has(code)) {
-    errEl.textContent = 'Invalid code. Check your Etsy purchase.';
+    errEl.textContent = lang === 'es' ? 'Código inválido. Revisa tu código de acceso.' : 'Invalid code. Please check your access code.';
     input.classList.add('error');
     setTimeout(() => input.classList.remove('error'), 400);
     input.focus();
