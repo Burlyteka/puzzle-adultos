@@ -1,13 +1,13 @@
 {
-  "name": "Puzzle Bundle — Mindful & Positive",
-  "short_name": "Puzzle Bundle",
-  "description": "11 actividades mentales: sopas de letras, sudoku, trivia, laberintos y más.",
+  "name": "SereneGrove — Mindful Activities",
+  "short_name": "SereneGrove",
+  "description": "Mindful activities for adults. Puzzles, sudoku, trivia and more.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#f5f0e8",
-  "theme_color": "#5a7a5a",
+  "background_color": "#F7F4EF",
+  "theme_color": "#2D5016",
   "orientation": "portrait-primary",
-  "lang": "es",
+  "lang": "en",
   "icons": [
     {
       "src": "icon.svg",
