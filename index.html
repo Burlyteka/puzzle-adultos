@@ -769,14 +769,28 @@
   .cw-clue-item.done { text-decoration: line-through; color: var(--text-soft); }
 
   /* ---- HEADER CONTROLS ---- */
-  .header-controls { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; justify-content: flex-end; }
+  .header-controls { display: flex; gap: 8px; align-items: center; }
   .hbtn {
     background: rgba(255,255,255,0.18); border: 1.5px solid rgba(255,255,255,0.4);
-    color: white; padding: 5px 10px; border-radius: 20px; cursor: pointer;
-    font-size: 0.8rem; font-family: 'Nunito', sans-serif; transition: all 0.2s; white-space: nowrap;
+    color: white; padding: 6px 12px; border-radius: 20px; cursor: pointer;
+    font-size: 0.85rem; font-family: 'Nunito', sans-serif; transition: all 0.2s; white-space: nowrap;
   }
   .hbtn:hover { background: rgba(255,255,255,0.35); }
   .hbtn.active { background: white; color: var(--green); }
+
+  /* ---- HOME SETTINGS ROW ---- */
+  .home-settings-row {
+    display: flex; gap: 8px; justify-content: center;
+    margin: 0 0 20px; flex-wrap: wrap;
+  }
+  .home-settings-row .settings-btn {
+    background: var(--green-pale); border: 1.5px solid var(--border);
+    color: var(--green); padding: 5px 13px; border-radius: 20px;
+    cursor: pointer; font-size: 0.82rem; font-family: 'Nunito', sans-serif;
+    transition: all 0.2s; white-space: nowrap;
+  }
+  .home-settings-row .settings-btn:hover { background: var(--green); color: white; border-color: var(--green); }
+  .home-settings-row .settings-btn.active { background: var(--green); color: white; border-color: var(--green); }
 
   /* ---- STREAK ---- */
   .streak-bar {
@@ -1000,10 +1014,6 @@
     <button class="change-name-btn" id="change-name-btn" onclick="changeName()" style="display:none;margin-top:0;margin-left:6px">✏️ <span id="change-name-label">Change name</span></button>
   </div>
   <div class="header-controls">
-    <button class="hbtn active" onclick="setFontSize('normal')" id="fs-normal">A</button>
-    <button class="hbtn" onclick="setFontSize('lg')" id="fs-lg">A+</button>
-    <button class="hbtn" onclick="setFontSize('xl')" id="fs-xl">A++</button>
-    <button class="hbtn" onclick="toggleContrast()" id="contrast-btn">◑</button>
     <button class="hbtn" onclick="toggleDark()" id="dark-btn">🌙</button>
     <button class="hbtn" onclick="toggleLang()" id="lang-btn">🌐 EN</button>
   </div>
@@ -1032,6 +1042,12 @@
       <div class="leaf">🌿</div>
       <h2 id="home-title">Bienvenido a tu momento de calma</h2>
       <p id="home-desc">13 actividades para estimular tu mente y disfrutar cada momento.<br>Elige tu favorita y comienza cuando quieras.</p>
+    </div>
+    <div class="home-settings-row">
+      <button class="settings-btn active" onclick="setFontSize('normal')" id="fs-normal">A</button>
+      <button class="settings-btn" onclick="setFontSize('lg')" id="fs-lg">A+</button>
+      <button class="settings-btn" onclick="setFontSize('xl')" id="fs-xl">A++</button>
+      <button class="settings-btn" onclick="toggleContrast()" id="contrast-btn">◑ <span id="contrast-label">Contrast</span></button>
     </div>
     <div class="puzzle-grid" id="puzzle-grid"></div>
   </div>
@@ -2640,8 +2656,10 @@ function renderDailyQuote() {
   const quotes = lang === 'es' ? quotesES : quotesEN;
   const idx = new Date().getDate() % quotes.length;
   const q = quotes[idx];
-  document.getElementById('daily-quote-text').textContent = q.text;
-  document.getElementById('daily-quote-author').textContent = q.author;
+  const textEl = document.getElementById('daily-quote-text');
+  const authorEl = document.getElementById('daily-quote-author');
+  if (textEl) { textEl.textContent = q.text; textEl.style.color = '#ffffff'; }
+  if (authorEl) { authorEl.textContent = q.author; authorEl.style.color = '#f0ece0'; }
 }
 
 // ===================== CROSSWORD =====================
@@ -3779,7 +3797,8 @@ function getGreeting(name) {
 }
 
 function renderGreeting() {
-  const name = localStorage.getItem('pb_name');
+  const raw = localStorage.getItem('pb_name');
+  const name = raw ? raw.charAt(0).toUpperCase() + raw.slice(1) : null;
   const el = document.getElementById('home-title');
   if (!el) return;
   el.textContent = name ? getGreeting(name) : t('home-title');
