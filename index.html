@@ -86,82 +86,69 @@
     position: relative;
   }
 
-  /* SPLASH SCREEN */
-  #splash {
+  /* SHARED OVERLAY STYLES */
+  @keyframes splashIn { from { opacity:0; transform: translateY(20px); } to { opacity:1; transform: translateY(0); } }
+  @keyframes dotBounce { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+  @keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-8px)} 75%{transform:translateX(8px)} }
+  .overlay-screen {
     position: fixed; inset: 0; z-index: 9999;
     background: linear-gradient(135deg, #0d1f0d, #1e3a1e);
-    display: flex; align-items: center; justify-content: center;
-    transition: opacity 0.5s ease;
-  }
-  #splash.hiding { opacity: 0; pointer-events: none; }
-  #splash-inner { text-align: center; color: white; animation: splashIn 0.8s ease; }
-  #splash-inner h1 { font-family: 'Playfair Display', serif; font-size: 2.4rem; margin: 12px 0 6px; }
-  #splash-inner p { font-size: 1rem; opacity: 0.85; letter-spacing: 1px; }
-  #splash-dots { margin-top: 28px; display: flex; gap: 10px; justify-content: center; }
-  #splash-dots span { width: 10px; height: 10px; border-radius: 50%; background: rgba(255,255,255,0.7); animation: dotBounce 1s ease infinite; }
-  #splash-dots span:nth-child(2) { animation-delay: 0.2s; }
-  #splash-dots span:nth-child(3) { animation-delay: 0.4s; }
-  @keyframes splashIn { from { opacity:0; transform: translateY(20px); } to { opacity:1; transform: translateY(0); } }
-  @keyframes splashFade { to { opacity:0; pointer-events:none; } }
-  @keyframes dotBounce { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
-
-  /* ONBOARDING SCREEN */
-  #onboarding {
-    position: fixed; inset: 0; z-index: 9998;
-    background: linear-gradient(135deg, #0d1f0d, #1e3a1e);
     display: none; align-items: center; justify-content: center;
-    padding: 24px;
+    padding: 24px; transition: opacity 0.4s ease;
   }
-  #onboarding.visible { display: flex; }
-  #onboarding-inner {
+  .overlay-screen.visible { display: flex; }
+  .overlay-screen.hiding { opacity: 0; pointer-events: none; }
+  .overlay-inner {
     text-align: center; color: white;
     width: 100%; max-width: 360px;
     animation: splashIn 0.5s ease;
   }
-  #onboarding-inner .ob-emoji { font-size: 3rem; margin-bottom: 16px; }
-  #onboarding-inner h2 {
-    font-family: 'Playfair Display', serif;
-    font-size: 1.9rem; margin-bottom: 8px; line-height: 1.3;
-  }
-  #onboarding-inner .ob-sub {
-    font-size: 0.95rem; opacity: 0.7; margin-bottom: 28px; letter-spacing: 0.5px;
-  }
-  #ob-name-input {
-    width: 100%; padding: 16px 20px; font-size: 1.2rem;
-    border: 2px solid rgba(255,255,255,0.3); border-radius: 16px;
-    background: rgba(255,255,255,0.1); color: white;
+  .overlay-inner .ov-emoji { font-size: 3.5rem; margin-bottom: 16px; }
+  .overlay-inner h1 { font-family: 'Playfair Display', serif; font-size: 2.2rem; margin-bottom: 8px; line-height: 1.2; }
+  .overlay-inner h2 { font-family: 'Playfair Display', serif; font-size: 1.8rem; margin-bottom: 8px; line-height: 1.3; }
+  .overlay-inner .ov-sub { font-size: 0.95rem; opacity: 0.65; margin-bottom: 32px; letter-spacing: 0.5px; }
+  .ov-input {
+    width: 100%; padding: 16px 20px; font-size: 1.15rem;
+    border: 2px solid rgba(255,255,255,0.25); border-radius: 16px;
+    background: rgba(255,255,255,0.08); color: white;
     font-family: 'Nunito', sans-serif; outline: none;
-    text-align: center; margin-bottom: 24px;
-    transition: border-color 0.2s;
+    text-align: center; margin-bottom: 16px; transition: border-color 0.2s, background 0.2s;
+    letter-spacing: 2px;
   }
-  #ob-name-input::placeholder { color: rgba(255,255,255,0.4); }
-  #ob-name-input:focus { border-color: rgba(255,255,255,0.7); background: rgba(255,255,255,0.15); }
-  .ob-lang-row { display: flex; gap: 12px; justify-content: center; margin-bottom: 28px; }
-  .ob-lang-btn {
-    padding: 12px 24px; border-radius: 30px; border: 2px solid rgba(255,255,255,0.3);
-    background: rgba(255,255,255,0.1); color: white; cursor: pointer;
-    font-family: 'Nunito', sans-serif; font-size: 1rem; font-weight: 600;
-    transition: all 0.2s; letter-spacing: 0.3px;
+  .ov-input::placeholder { color: rgba(255,255,255,0.35); letter-spacing: 0; }
+  .ov-input:focus { border-color: rgba(255,255,255,0.6); background: rgba(255,255,255,0.13); }
+  .ov-input.error { border-color: #e74c3c; animation: shake 0.35s ease; }
+  .ov-name-input { letter-spacing: 0; }
+  .ov-error {
+    font-size: 0.88rem; color: #ff7070; margin-bottom: 16px;
+    min-height: 1.2em; transition: opacity 0.2s;
   }
-  .ob-lang-btn.active { background: rgba(255,255,255,0.25); border-color: rgba(255,255,255,0.8); }
-  .ob-lang-btn:hover { background: rgba(255,255,255,0.2); }
-  #ob-begin-btn {
+  .ov-btn {
     width: 100%; padding: 16px; font-size: 1.1rem; font-weight: 700;
     font-family: 'Nunito', sans-serif; border: none; border-radius: 16px;
     background: linear-gradient(135deg, #5a7a5a, #4a7060);
     color: white; cursor: pointer; transition: all 0.2s;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.35); margin-top: 8px;
   }
-  #ob-begin-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(0,0,0,0.4); }
+  .ov-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(0,0,0,0.45); }
+  .ob-lang-row { display: flex; gap: 12px; justify-content: center; margin-bottom: 20px; }
+  .ob-lang-btn {
+    padding: 11px 22px; border-radius: 30px; border: 2px solid rgba(255,255,255,0.28);
+    background: rgba(255,255,255,0.08); color: white; cursor: pointer;
+    font-family: 'Nunito', sans-serif; font-size: 0.95rem; font-weight: 600;
+    transition: all 0.2s;
+  }
+  .ob-lang-btn.active { background: rgba(255,255,255,0.22); border-color: rgba(255,255,255,0.75); }
+  .ob-lang-btn:hover { background: rgba(255,255,255,0.18); }
 
   /* CHANGE NAME BUTTON */
   .change-name-btn {
-    background: rgba(255,255,255,0.12); border: 1.5px solid rgba(255,255,255,0.3);
-    color: rgba(255,255,255,0.8); padding: 4px 10px; border-radius: 16px;
-    cursor: pointer; font-size: 0.75rem; font-family: 'Nunito', sans-serif;
-    transition: all 0.2s; white-space: nowrap; margin-top: 4px; display: block;
+    background: rgba(255,255,255,0.1); border: 1.5px solid rgba(255,255,255,0.25);
+    color: rgba(255,255,255,0.75); padding: 3px 10px; border-radius: 14px;
+    cursor: pointer; font-size: 0.72rem; font-family: 'Nunito', sans-serif;
+    transition: all 0.2s; white-space: nowrap; margin-top: 4px; display: none;
   }
-  .change-name-btn:hover { background: rgba(255,255,255,0.22); color: white; }
+  .change-name-btn:hover { background: rgba(255,255,255,0.2); color: white; }
 
   /* HEADER */
   header {
@@ -929,26 +916,34 @@
 </head>
 <body>
 
-<div id="splash">
-  <div id="splash-inner">
-    <div style="font-size:3.5rem">🌿</div>
+<!-- ACCESS SCREEN -->
+<div id="access-screen" class="overlay-screen visible">
+  <div class="overlay-inner">
+    <div class="ov-emoji">🌿</div>
     <h1>Puzzle Bundle</h1>
-    <p>Your calm moment</p>
-    <div id="splash-dots"><span></span><span></span><span></span></div>
+    <p class="ov-sub">Mindful Activities for Adults</p>
+    <input id="access-code-input" class="ov-input" type="text" maxlength="12"
+      placeholder="Enter your access code" autocomplete="off" spellcheck="false"
+      oninput="this.value=this.value.toUpperCase()" onkeydown="if(event.key==='Enter')submitCode()">
+    <div class="ov-error" id="access-error"></div>
+    <button class="ov-btn" onclick="submitCode()">Enter →</button>
   </div>
 </div>
 
-<div id="onboarding">
-  <div id="onboarding-inner">
-    <div class="ob-emoji">🌿</div>
+<!-- ONBOARDING SCREEN -->
+<div id="onboarding" class="overlay-screen">
+  <div class="overlay-inner">
+    <div class="ov-emoji">🌿</div>
     <h2 id="ob-question">What's your name?</h2>
-    <p class="ob-sub" id="ob-sub">We'll personalize your experience</p>
-    <input id="ob-name-input" type="text" maxlength="30" placeholder="Your name..." autocomplete="off" spellcheck="false">
+    <p class="ov-sub" id="ob-sub">We'll personalize your experience</p>
+    <input id="ob-name-input" class="ov-input ov-name-input" type="text" maxlength="30"
+      placeholder="Your name..." autocomplete="off" spellcheck="false"
+      onkeydown="if(event.key==='Enter')completeOnboarding()">
     <div class="ob-lang-row">
       <button class="ob-lang-btn active" id="ob-en-btn" onclick="obSetLang('en')">🇺🇸 English</button>
       <button class="ob-lang-btn" id="ob-es-btn" onclick="obSetLang('es')">🇪🇸 Español</button>
     </div>
-    <button id="ob-begin-btn" onclick="completeOnboarding()">Let's begin →</button>
+    <button class="ov-btn" id="ob-begin-btn" onclick="completeOnboarding()">Let's begin →</button>
   </div>
 </div>
 
@@ -3614,15 +3609,60 @@ function showCelebration(msg) {
   setTimeout(() => el.remove(), 2800);
 }
 
+// ===================== ACCESS CODES =====================
+const VALID_CODES = new Set([
+  'CALM-DEMO',
+  'CALM-001','CALM-002','CALM-003','CALM-004','CALM-005',
+  'CALM-006','CALM-007','CALM-008','CALM-009','CALM-010',
+  'CALM-011','CALM-012','CALM-013','CALM-014','CALM-015',
+  'CALM-016','CALM-017','CALM-018','CALM-019','CALM-020',
+  'CALM-021','CALM-022','CALM-023','CALM-024','CALM-025',
+  'CALM-026','CALM-027','CALM-028','CALM-029','CALM-030',
+  'CALM-031','CALM-032','CALM-033','CALM-034','CALM-035',
+  'CALM-036','CALM-037','CALM-038','CALM-039','CALM-040',
+  'CALM-041','CALM-042','CALM-043','CALM-044','CALM-045',
+  'CALM-046','CALM-047','CALM-048','CALM-049','CALM-050'
+]);
+
+function submitCode() {
+  const input = document.getElementById('access-code-input');
+  const code = (input.value || '').trim().toUpperCase();
+  const errEl = document.getElementById('access-error');
+  if (!VALID_CODES.has(code)) {
+    errEl.textContent = 'Invalid code. Check your Etsy purchase.';
+    input.classList.add('error');
+    setTimeout(() => input.classList.remove('error'), 400);
+    input.focus();
+    return;
+  }
+  errEl.textContent = '';
+  localStorage.setItem('pb_code', code);
+  hideOverlay('access-screen');
+  obSetLang('en');
+  showOverlay('onboarding');
+}
+
 // ===================== ONBOARDING & GREETING =====================
 let obLang = 'en';
+
+function showOverlay(id) {
+  const el = document.getElementById(id);
+  if (el) { el.classList.remove('hiding'); el.classList.add('visible'); }
+}
+
+function hideOverlay(id) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.classList.add('hiding');
+  setTimeout(() => { el.classList.remove('visible', 'hiding'); }, 450);
+}
 
 function obSetLang(l) {
   obLang = l;
   document.getElementById('ob-en-btn').classList.toggle('active', l === 'en');
   document.getElementById('ob-es-btn').classList.toggle('active', l === 'es');
   document.getElementById('ob-question').textContent = l === 'es' ? '¿Cómo te llamas?' : "What's your name?";
-  document.getElementById('ob-sub').textContent = l === 'es' ? 'Personalizaremos tu experiencia' : 'We\'ll personalize your experience';
+  document.getElementById('ob-sub').textContent = l === 'es' ? 'Personalizaremos tu experiencia' : "We'll personalize your experience";
   document.getElementById('ob-name-input').placeholder = l === 'es' ? 'Tu nombre...' : 'Your name...';
   document.getElementById('ob-begin-btn').textContent = l === 'es' ? '¡Empecemos →' : "Let's begin →";
 }
@@ -3630,11 +3670,19 @@ function obSetLang(l) {
 function completeOnboarding() {
   const input = document.getElementById('ob-name-input');
   const name = (input.value || '').trim();
-  if (!name) { input.focus(); input.style.borderColor = '#e74c3c'; setTimeout(() => input.style.borderColor = '', 800); return; }
+  if (!name) {
+    input.classList.add('error');
+    setTimeout(() => input.classList.remove('error'), 400);
+    input.focus(); return;
+  }
   localStorage.setItem('pb_name', name);
   localStorage.setItem('pb_lang', obLang);
   lang = obLang;
-  document.getElementById('onboarding').classList.remove('visible');
+  hideOverlay('onboarding');
+  loadHome();
+}
+
+function loadHome() {
   renderGreeting();
   renderHomeCards();
   applyLang();
@@ -3650,22 +3698,17 @@ function getGreeting(name) {
     const period = h < 12 ? 'Buenos días' : h < 19 ? 'Buenas tardes' : 'Buenas noches';
     const emoji = h < 12 ? '🌿' : h < 19 ? '☀️' : '🌙';
     return `${period}, ${name} ${emoji}`;
-  } else {
-    const period = h < 12 ? 'Good morning' : h < 19 ? 'Good afternoon' : 'Good evening';
-    const emoji = h < 12 ? '🌿' : h < 19 ? '☀️' : '🌙';
-    return `${period}, ${name} ${emoji}`;
   }
+  const period = h < 12 ? 'Good morning' : h < 19 ? 'Good afternoon' : 'Good evening';
+  const emoji = h < 12 ? '🌿' : h < 19 ? '☀️' : '🌙';
+  return `${period}, ${name} ${emoji}`;
 }
 
 function renderGreeting() {
   const name = localStorage.getItem('pb_name');
   const el = document.getElementById('home-title');
   if (!el) return;
-  if (name) {
-    el.textContent = getGreeting(name);
-  } else {
-    el.textContent = t('home-title');
-  }
+  el.textContent = name ? getGreeting(name) : t('home-title');
 }
 
 function showChangeNameBtn() {
@@ -3673,47 +3716,38 @@ function showChangeNameBtn() {
   const lbl = document.getElementById('change-name-label');
   if (!btn) return;
   const name = localStorage.getItem('pb_name');
-  if (name) {
-    btn.style.display = 'block';
-    if (lbl) lbl.textContent = lang === 'es' ? 'Cambiar nombre' : 'Change name';
-  } else {
-    btn.style.display = 'none';
-  }
+  btn.style.display = name ? 'block' : 'none';
+  if (lbl) lbl.textContent = lang === 'es' ? 'Cambiar nombre' : 'Change name';
 }
 
 function changeName() {
   localStorage.removeItem('pb_name');
   localStorage.removeItem('pb_lang');
+  localStorage.removeItem('pb_code');
   document.getElementById('change-name-btn').style.display = 'none';
-  obSetLang(lang);
-  document.getElementById('ob-name-input').value = '';
-  document.getElementById('onboarding').classList.add('visible');
+  document.getElementById('access-code-input').value = '';
+  document.getElementById('access-error').textContent = '';
+  showOverlay('access-screen');
 }
 
 // ===================== INIT =====================
 loadPrefs();
-
-// Read pb_lang set by onboarding (takes priority over puzzleBundle_prefs lang)
 const _pbLang = localStorage.getItem('pb_lang');
 if (_pbLang) lang = _pbLang;
 
-setTimeout(() => {
-  const splash = document.getElementById('splash');
-  if (splash) { splash.classList.add('hiding'); setTimeout(() => splash.style.display = 'none', 500); }
+(function initFlow() {
+  const pbCode = localStorage.getItem('pb_code');
   const pbName = localStorage.getItem('pb_name');
-  if (pbName) {
-    renderGreeting();
-    renderHomeCards();
-    applyLang();
-    renderDailyQuote();
-    renderStreak();
-    renderStats();
-    showChangeNameBtn();
-  } else {
+  if (pbCode && pbName) {
+    hideOverlay('access-screen');
+    loadHome();
+  } else if (pbCode && !pbName) {
+    hideOverlay('access-screen');
     obSetLang(lang);
-    document.getElementById('onboarding').classList.add('visible');
+    showOverlay('onboarding');
   }
-}, 2000);
+  // else: access-screen stays visible (default)
+})();
 
 // ===================== SERVICE WORKER =====================
 if ('serviceWorker' in navigator) {
