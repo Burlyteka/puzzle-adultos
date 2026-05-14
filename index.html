@@ -84,6 +84,7 @@
     flex-direction: column;
     box-shadow: 0 0 60px rgba(0,0,0,0.5);
     position: relative;
+    overflow-x: hidden;
   }
 
   /* SHARED OVERLAY STYLES */
@@ -141,14 +142,27 @@
   .ob-lang-btn.active { background: rgba(255,255,255,0.22); border-color: rgba(255,255,255,0.75); }
   .ob-lang-btn:hover { background: rgba(255,255,255,0.18); }
 
-  /* CHANGE NAME BUTTON */
+  /* CHANGE NAME BUTTON — lives below home cards, not in the header */
   .change-name-btn {
-    background: rgba(255,255,255,0.1); border: 1.5px solid rgba(255,255,255,0.25);
-    color: rgba(255,255,255,0.75); padding: 3px 10px; border-radius: 14px;
-    cursor: pointer; font-size: 0.72rem; font-family: 'Nunito', sans-serif;
-    transition: all 0.2s; white-space: nowrap; margin-top: 4px; display: none;
+    background: none;
+    border: 1.5px solid var(--border);
+    color: var(--text-soft);
+    padding: 8px 20px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 0.82rem;
+    font-family: 'Nunito', sans-serif;
+    transition: all 0.2s;
+    white-space: nowrap;
+    display: none;
+    margin: 20px auto 0;
   }
-  .change-name-btn:hover { background: rgba(255,255,255,0.2); color: white; }
+  .change-name-btn:hover { background: var(--green-pale); color: var(--green); border-color: var(--green-light); }
+  /* Home footer — wrapper for the change-name button */
+  #home-footer {
+    text-align: center;
+    padding-bottom: 8px;
+  }
 
   /* HEADER */
   header {
@@ -313,12 +327,13 @@
     padding: 28px;
     border: 1px solid var(--border);
     box-shadow: var(--shadow);
+    max-width: 100%;
   }
 
   /* ---- WORD SEARCH ---- */
   #ws-grid {
     font-family: 'Courier New', monospace;
-    font-size: 1.3rem;
+    font-size: clamp(0.7rem, 4vw, 1.3rem);
     line-height: 1;
     user-select: none;
     cursor: pointer;
@@ -336,7 +351,12 @@
   .ws-cell.highlighted { background: rgba(90,122,90,0.25); }
   .ws-cell.selected { background: var(--green-light); color: white; }
   .ws-cell.found { background: var(--green); color: white; }
-  #ws-container { text-align: center; }
+  #ws-container {
+    text-align: center;
+    overflow-x: auto;
+    max-width: 100%;
+    -webkit-overflow-scrolling: touch;
+  }
   .ws-word-list {
     display: flex; flex-wrap: wrap; gap: 10px;
     justify-content: center; margin-top: 20px;
@@ -443,7 +463,7 @@
   /* ---- NUMBER SEARCH ---- */
   #ns-grid {
     font-family: 'Courier New', monospace;
-    font-size: 1.1rem;
+    font-size: clamp(0.7rem, 4vw, 1.1rem);
     line-height: 1;
     user-select: none;
     cursor: pointer;
@@ -458,7 +478,12 @@
   }
   .ns-cell.selected { background: var(--green-light); color: white; }
   .ns-cell.found { background: var(--green); color: white; }
-  #ns-container { text-align: center; }
+  #ns-container {
+    text-align: center;
+    overflow-x: auto;
+    max-width: 100%;
+    -webkit-overflow-scrolling: touch;
+  }
   .ns-number-list {
     display: flex; flex-wrap: wrap; gap: 10px;
     justify-content: center; margin-top: 20px;
@@ -541,8 +566,14 @@
     border: 3px solid var(--green);
     cursor: crosshair;
     touch-action: none;
+    max-width: 100%;
   }
-  #maze-container { text-align: center; }
+  #maze-container {
+    text-align: center;
+    overflow-x: auto;
+    max-width: 100%;
+    -webkit-overflow-scrolling: touch;
+  }
   #maze-message {
     font-size: 1.1rem; color: var(--green);
     font-weight: bold; margin-top: 12px;
@@ -641,6 +672,8 @@
     justify-content: center;
     max-width: 560px;
     margin: 0 auto 20px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
   }
   .mem-card {
     aspect-ratio: 1;
@@ -684,7 +717,7 @@
 
   /* ---- CROSSWORD ---- */
   #cw-container { display: flex; gap: 28px; flex-wrap: wrap; justify-content: center; }
-  #cw-grid-wrap { overflow-x: auto; }
+  #cw-grid-wrap { overflow-x: auto; max-width: 100%; -webkit-overflow-scrolling: touch; }
   table#cw-grid { border-collapse: collapse; }
   table#cw-grid td {
     width: 2rem; height: 2rem;
@@ -807,6 +840,11 @@
 
   /* ---- COLORING PAGE ---- */
   #color-container { text-align: center; }
+  #coloring-svg-wrap {
+    overflow-x: auto;
+    max-width: 100%;
+    -webkit-overflow-scrolling: touch;
+  }
   #coloring-svg { max-width: 480px; width: 100%; cursor: crosshair; display: block; margin: 0 auto 16px; border-radius: 12px; border: 2px solid var(--border); box-shadow: var(--shadow); }
   #coloring-svg path, #coloring-svg circle, #coloring-svg ellipse, #coloring-svg rect, #coloring-svg polygon {
     transition: opacity 0.1s; cursor: pointer;
@@ -822,7 +860,12 @@
   #color-actions { display: flex; gap: 10px; justify-content: center; margin-top: 10px; flex-wrap: wrap; }
 
   /* ---- JIGSAW ---- */
-  #jigsaw-container { text-align: center; }
+  #jigsaw-container {
+    text-align: center;
+    overflow-x: auto;
+    max-width: 100%;
+    -webkit-overflow-scrolling: touch;
+  }
   #jigsaw-board {
     position: relative; margin: 0 auto 16px;
     border: 3px solid var(--green); border-radius: 12px;
@@ -843,23 +886,23 @@
 
   /* RESPONSIVE */
   @media (max-width: 600px) {
-    /* --- Header: stack title + controls on 2 lines --- */
+    /* --- Header: compact 2-row layout --- */
     header {
       flex-direction: column;
       align-items: flex-start;
       padding: 10px 14px;
-      gap: 8px;
+      gap: 6px;
     }
     header h1 { font-size: 1rem; }
     header .subtitle { font-size: 0.72rem; }
-    .header-controls { width: 100%; justify-content: flex-start; gap: 4px; }
+    .header-controls { width: 100%; justify-content: flex-start; gap: 4px; flex-wrap: wrap; }
     .hbtn { padding: 4px 7px; font-size: 0.7rem; }
 
     /* --- Main padding --- */
     main { padding: 14px 10px 40px; }
 
-    /* --- Home cards: 1 column --- */
-    .puzzle-grid { grid-template-columns: 1fr; }
+    /* --- Home cards: 2 columns on narrow screens --- */
+    .puzzle-grid { grid-template-columns: repeat(2, 1fr); }
 
     /* --- Puzzle header: stack title + buttons --- */
     .puzzle-header { flex-direction: column; align-items: flex-start; }
@@ -872,14 +915,6 @@
     /* --- Puzzle content: less padding --- */
     .puzzle-content { padding: 12px 10px; }
 
-    /* --- Word search: vw-based font so 14 cols always fit --- */
-    #ws-grid { font-size: 4.5vw; }
-    #ws-container { overflow-x: auto; -webkit-overflow-scrolling: touch; }
-
-    /* --- Number search: vw-based font --- */
-    #ns-grid { font-size: 4vw; }
-    #ns-container { overflow-x: auto; -webkit-overflow-scrolling: touch; }
-
     /* --- Sudoku: fits naturally via width:100%, shrink numpad --- */
     #sudoku-grid { max-width: 100%; }
     .num-btn { width: 2rem; height: 2rem; font-size: 1rem; }
@@ -887,19 +922,13 @@
 
     /* --- Crossword: stack grid + clues, allow horizontal scroll --- */
     #cw-container { flex-direction: column; }
-    #cw-grid-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; width: 100%; }
+    #cw-grid-wrap { width: 100%; }
     .cw-clues { max-width: 100%; width: 100%; }
     table#cw-grid td { width: 1.6rem; height: 1.6rem; }
 
     /* --- Memory game: prevent card overflow --- */
     .memory-grid { max-width: 100% !important; width: 100%; }
     .mem-card { min-width: 0; }
-
-    /* --- Jigsaw: horizontal scroll if needed --- */
-    #jigsaw-container { overflow-x: auto; -webkit-overflow-scrolling: touch; }
-
-    /* --- Coloring: horizontal scroll if needed --- */
-    #coloring-svg-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
 
     /* --- Streak bar: wrap items --- */
     .streak-bar { gap: 10px; }
@@ -911,6 +940,9 @@
 
     /* --- Daily quote: smaller padding --- */
     .daily-quote { padding: 14px 16px; font-size: 1rem; }
+
+    /* --- Change name btn: full visibility on mobile --- */
+    .change-name-btn { font-size: 0.85rem; padding: 9px 22px; }
   }
 </style>
 </head>
@@ -954,7 +986,6 @@
     <div class="leaf" style="font-size:1.2rem; display:inline; margin-right:8px;">🌿</div>
     <span id="h-title">Puzzle Bundle</span>
     <div class="subtitle" id="h-subtitle">Mindful · Positive · Affirmative</div>
-    <button class="change-name-btn" id="change-name-btn" onclick="changeName()" style="display:none">✏️ <span id="change-name-label">Change name</span></button>
   </div>
   <div class="header-controls">
     <button class="hbtn active" onclick="setFontSize('normal')" id="fs-normal">A</button>
@@ -991,6 +1022,9 @@
       <p id="home-desc">11 actividades para estimular tu mente y disfrutar cada momento.<br>Elige tu favorita y comienza cuando quieras.</p>
     </div>
     <div class="puzzle-grid" id="puzzle-grid"></div>
+    <div id="home-footer">
+      <button class="change-name-btn" id="change-name-btn" onclick="changeName()">✏️ <span id="change-name-label">Change name</span></button>
+    </div>
   </div>
 
   <!-- WORD SEARCH -->
@@ -3716,7 +3750,7 @@ function showChangeNameBtn() {
   const lbl = document.getElementById('change-name-label');
   if (!btn) return;
   const name = localStorage.getItem('pb_name');
-  btn.style.display = name ? 'block' : 'none';
+  btn.style.display = name ? 'inline-block' : 'none';
   if (lbl) lbl.textContent = lang === 'es' ? 'Cambiar nombre' : 'Change name';
 }
 
