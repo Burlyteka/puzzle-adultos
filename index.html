@@ -3847,8 +3847,14 @@ if (_pbLang) { lang = _pbLang; }
 
 // ===================== SERVICE WORKER =====================
 if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/sw.js').catch(() => {});
+  navigator.serviceWorker.register('/sw.js').then(reg => {
+    reg.addEventListener('updatefound', () => {
+      reg.installing.addEventListener('statechange', e => {
+        if (e.target.state === 'installed' && navigator.serviceWorker.controller) {
+          window.location.reload();
+        }
+      });
+    });
   });
 }
 </script>

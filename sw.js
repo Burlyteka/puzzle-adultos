@@ -1,9 +1,4 @@
-const CACHE = 'puzzle-bundle-v1';
-const ASSETS = [
-  '/',
-  '/index.html',
-  'https://cdn.tailwindcss.com'
-];
+const CACHE = 'serene-grove-v3';
 
 self.addEventListener('install', e => {
   e.waitUntil(
