@@ -59,10 +59,26 @@
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
     font-family: 'Georgia', serif;
-    background: var(--bg);
+    background: #2d3a2d;
     color: var(--text);
     min-height: 100vh;
     font-size: 18px;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+  }
+  body.dark-mode { background: #111611; }
+
+  /* PHONE WRAPPER — centers the app in a phone column on desktop */
+  #app-shell {
+    width: 100%;
+    max-width: 430px;
+    min-height: 100vh;
+    background: var(--bg);
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 0 60px rgba(0,0,0,0.5);
+    position: relative;
   }
 
   /* HEADER */
@@ -103,7 +119,7 @@
   .lang-btn:hover { background: rgba(255,255,255,0.35); }
 
   /* MAIN */
-  main { max-width: 960px; margin: 0 auto; padding: 24px 16px 60px; }
+  main { width: 100%; max-width: 430px; margin: 0 auto; padding: 24px 16px 60px; }
 
   /* HOME SCREEN */
   #home-screen { display: block; }
@@ -132,8 +148,8 @@
   }
   .puzzle-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-    gap: 16px;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 14px;
   }
   .puzzle-card {
     background: var(--card);
@@ -815,6 +831,7 @@
 </style>
 </head>
 <body>
+<div id="app-shell">
 
 <header>
   <div>
@@ -3471,5 +3488,6 @@ if ('serviceWorker' in navigator) {
   });
 }
 </script>
+</div><!-- #app-shell -->
 </body>
 </html>
