@@ -1,0 +1,21 @@
+{
+  "name": "Puzzle Bundle — Mindful & Positive",
+  "short_name": "Puzzle Bundle",
+  "description": "11 actividades mentales: sopas de letras, sudoku, trivia, laberintos y más.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f5f0e8",
+  "theme_color": "#5a7a5a",
+  "orientation": "portrait-primary",
+  "lang": "es",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["games", "education", "lifestyle"],
+  "screenshots": []
+}

@@ -1,0 +1,3475 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Puzzle Bundle — Mindful & Positive</title>
+
+<!-- PWA Manifest -->
+<link rel="manifest" href="/manifest.json">
+
+<!-- PWA / App meta -->
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Puzzle Bundle">
+<meta name="theme-color" content="#5a7a5a">
+<meta name="application-name" content="Puzzle Bundle">
+<meta name="description" content="11 actividades mentales: sopas de letras, sudoku, trivia, laberintos y más.">
+
+<!-- iOS touch icon (se usa si no hay icon-*.png, funciona con un SVG inline) -->
+<link rel="apple-touch-icon" href="icon.svg">
+<link rel="icon" type="image/svg+xml" href="icon.svg">
+<style>
+  :root {
+    --bg: #f5f0e8;
+    --card: #faf7f2;
+    --green: #5a7a5a;
+    --green-light: #8aaa7a;
+    --green-pale: #e8f0e0;
+    --brown: #8b6f47;
+    --brown-light: #c4a882;
+    --text: #3a3028;
+    --text-soft: #7a6a58;
+    --border: #d4c8b0;
+    --accent: #c8845a;
+    --white: #ffffff;
+    --shadow: 0 4px 20px rgba(90,122,90,0.12);
+    --radius: 16px;
+  }
+  /* DARK MODE */
+  body.dark-mode {
+    --bg: #1a1f1a; --card: #242b24; --green: #6a9a6a; --green-light: #8aaa7a;
+    --green-pale: #1e2e1e; --brown: #c4a882; --brown-light: #8b6f47;
+    --text: #e8e0d0; --text-soft: #a09080; --border: #3a4a3a;
+    --accent: #d8946a; --shadow: 0 4px 20px rgba(0,0,0,0.4);
+  }
+  /* HIGH CONTRAST */
+  body.high-contrast {
+    --bg: #ffffff; --card: #ffffff; --green: #005500; --green-light: #007700;
+    --green-pale: #e0ffe0; --text: #000000; --text-soft: #333333;
+    --border: #000000; --accent: #cc4400;
+  }
+  body.high-contrast .ws-cell, body.high-contrast .ns-cell { border: 1px solid #000; }
+  /* FONT SIZES — base on html so rem scales everywhere */
+  html { font-size: 18px; }
+  body.font-lg { font-size: 20px; }
+  body.font-xl { font-size: 24px; }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Georgia', serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    font-size: 18px;
+  }
+
+  /* HEADER */
+  header {
+    background: var(--green);
+    color: white;
+    padding: 18px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.15);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  header h1 {
+    font-size: 1.4rem;
+    font-weight: normal;
+    letter-spacing: 1px;
+  }
+  header .subtitle {
+    font-size: 0.85rem;
+    opacity: 0.8;
+    margin-top: 2px;
+  }
+  .lang-btn {
+    background: rgba(255,255,255,0.2);
+    border: 2px solid rgba(255,255,255,0.5);
+    color: white;
+    padding: 8px 18px;
+    border-radius: 30px;
+    cursor: pointer;
+    font-size: 0.95rem;
+    font-family: 'Georgia', serif;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+  .lang-btn:hover { background: rgba(255,255,255,0.35); }
+
+  /* MAIN */
+  main { max-width: 960px; margin: 0 auto; padding: 24px 16px 60px; }
+
+  /* HOME SCREEN */
+  #home-screen { display: block; }
+  .home-hero {
+    text-align: center;
+    padding: 36px 20px 28px;
+    background: var(--card);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    margin-bottom: 28px;
+    border: 1px solid var(--border);
+  }
+  .home-hero h2 {
+    font-size: 2rem;
+    color: var(--green);
+    margin-bottom: 8px;
+  }
+  .home-hero p {
+    color: var(--text-soft);
+    font-size: 1.05rem;
+    line-height: 1.7;
+  }
+  .home-hero .leaf {
+    font-size: 2.5rem;
+    margin-bottom: 12px;
+  }
+  .puzzle-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 16px;
+  }
+  .puzzle-card {
+    background: var(--card);
+    border: 2px solid var(--border);
+    border-radius: var(--radius);
+    padding: 22px 20px;
+    cursor: pointer;
+    transition: all 0.25s;
+    box-shadow: var(--shadow);
+    text-align: center;
+  }
+  .puzzle-card:hover {
+    border-color: var(--green-light);
+    transform: translateY(-3px);
+    box-shadow: 0 8px 28px rgba(90,122,90,0.18);
+  }
+  .puzzle-card .icon { font-size: 2.4rem; margin-bottom: 10px; }
+  .puzzle-card h3 { font-size: 1.15rem; color: var(--green); margin-bottom: 6px; }
+  .puzzle-card p { font-size: 0.88rem; color: var(--text-soft); line-height: 1.5; }
+
+  /* PUZZLE SCREENS */
+  .puzzle-screen { display: none; }
+  .puzzle-screen.active { display: block; }
+
+  .back-btn {
+    background: none;
+    border: 2px solid var(--green);
+    color: var(--green);
+    padding: 8px 20px;
+    border-radius: 30px;
+    cursor: pointer;
+    font-size: 0.95rem;
+    font-family: 'Georgia', serif;
+    margin-bottom: 20px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.2s;
+  }
+  .back-btn:hover { background: var(--green-pale); }
+
+  .puzzle-header {
+    background: var(--card);
+    border-radius: var(--radius);
+    padding: 20px 24px;
+    margin-bottom: 20px;
+    border: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .puzzle-header h2 { font-size: 1.5rem; color: var(--green); }
+  .puzzle-header p { font-size: 0.9rem; color: var(--text-soft); margin-top: 4px; }
+
+  .btn-group { display: flex; gap: 10px; flex-wrap: wrap; }
+  .btn {
+    padding: 9px 20px;
+    border-radius: 30px;
+    cursor: pointer;
+    font-family: 'Georgia', serif;
+    font-size: 0.9rem;
+    border: 2px solid transparent;
+    transition: all 0.2s;
+  }
+  .btn-primary { background: var(--green); color: white; }
+  .btn-primary:hover { background: var(--green-light); }
+  .btn-outline { background: none; border-color: var(--brown-light); color: var(--brown); }
+  .btn-outline:hover { background: #f5ede0; }
+  .btn-success { background: var(--accent); color: white; border: none; }
+
+  /* PUZZLE CONTENT */
+  .puzzle-content {
+    background: var(--card);
+    border-radius: var(--radius);
+    padding: 28px;
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow);
+  }
+
+  /* ---- WORD SEARCH ---- */
+  #ws-grid {
+    font-family: 'Courier New', monospace;
+    font-size: 1.3rem;
+    line-height: 1;
+    user-select: none;
+    cursor: pointer;
+    margin: 0 auto 20px;
+    display: inline-block;
+  }
+  .ws-row { display: flex; }
+  .ws-cell {
+    width: 1.4em; height: 1.4em;
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 6px;
+    transition: background 0.15s;
+    font-weight: 600;
+  }
+  .ws-cell.highlighted { background: rgba(90,122,90,0.25); }
+  .ws-cell.selected { background: var(--green-light); color: white; }
+  .ws-cell.found { background: var(--green); color: white; }
+  #ws-container { text-align: center; }
+  .ws-word-list {
+    display: flex; flex-wrap: wrap; gap: 10px;
+    justify-content: center; margin-top: 20px;
+  }
+  .ws-word {
+    padding: 6px 14px;
+    background: var(--green-pale);
+    border-radius: 20px;
+    font-size: 1rem;
+    color: var(--green);
+    font-weight: bold;
+    border: 2px solid var(--border);
+    transition: all 0.3s;
+  }
+  .ws-word.found { text-decoration: line-through; background: var(--green); color: white; border-color: var(--green); }
+
+  /* ---- SUDOKU ---- */
+  #sudoku-grid {
+    display: grid;
+    grid-template-columns: repeat(9, 1fr);
+    gap: 2px;
+    max-width: 380px;
+    margin: 0 auto 20px;
+    background: var(--green);
+    padding: 3px;
+    border-radius: 8px;
+  }
+  .sudoku-cell {
+    background: var(--card);
+    width: 100%; aspect-ratio: 1;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.3rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background 0.15s;
+    position: relative;
+  }
+  .sudoku-cell.given { color: var(--green); font-weight: 900; }
+  .sudoku-cell.user-input { color: var(--accent); }
+  .sudoku-cell.selected { background: var(--green-pale); }
+  .sudoku-cell.error { color: #c0392b; background: #fde8e8; }
+  .sudoku-cell.box-right { border-right: 3px solid var(--green); }
+  .sudoku-cell.box-bottom { border-bottom: 3px solid var(--green); }
+  #sudoku-numpad {
+    display: flex; gap: 8px; justify-content: center;
+    flex-wrap: wrap; margin: 10px auto;
+    max-width: 380px;
+  }
+  .num-btn {
+    width: 2.5rem; height: 2.5rem;
+    background: var(--green-pale);
+    border: 2px solid var(--green-light);
+    border-radius: 8px;
+    font-size: 1.3rem;
+    font-weight: bold;
+    color: var(--green);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .num-btn:hover { background: var(--green); color: white; }
+  .num-btn.erase { background: #fde8e0; border-color: var(--accent); color: var(--accent); }
+
+  /* ---- WORD SCRAMBLE ---- */
+  .scramble-list { max-width: 600px; margin: 0 auto; }
+  .scramble-item {
+    display: flex; align-items: center; gap: 14px;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border);
+    flex-wrap: wrap;
+  }
+  .scramble-num {
+    font-size: 0.85rem;
+    color: var(--text-soft);
+    width: 24px;
+    text-align: right;
+    flex-shrink: 0;
+  }
+  .scramble-word {
+    font-family: 'Courier New', monospace;
+    font-size: 1.15rem;
+    font-weight: bold;
+    color: var(--green);
+    letter-spacing: 3px;
+    min-width: 160px;
+  }
+  .scramble-input {
+    border: 2px solid var(--border);
+    border-radius: 8px;
+    padding: 6px 12px;
+    font-size: 1.05rem;
+    font-family: 'Georgia', serif;
+    background: var(--bg);
+    color: var(--text);
+    flex: 1;
+    min-width: 140px;
+    transition: border 0.2s;
+    text-transform: uppercase;
+  }
+  .scramble-input:focus { outline: none; border-color: var(--green-light); }
+  .scramble-input.correct { border-color: var(--green); background: var(--green-pale); }
+  .scramble-input.wrong { border-color: var(--accent); background: #fde8e0; }
+  .check-icon { font-size: 1.2rem; }
+
+  /* ---- NUMBER SEARCH ---- */
+  #ns-grid {
+    font-family: 'Courier New', monospace;
+    font-size: 1.1rem;
+    line-height: 1;
+    user-select: none;
+    cursor: pointer;
+    margin: 0 auto 20px;
+    display: inline-block;
+  }
+  .ns-cell {
+    width: 1.4em; height: 1.4em;
+    display: inline-flex; align-items: center; justify-content: center;
+    border-radius: 4px;
+    transition: background 0.15s;
+  }
+  .ns-cell.selected { background: var(--green-light); color: white; }
+  .ns-cell.found { background: var(--green); color: white; }
+  #ns-container { text-align: center; }
+  .ns-number-list {
+    display: flex; flex-wrap: wrap; gap: 10px;
+    justify-content: center; margin-top: 20px;
+  }
+  .ns-number {
+    padding: 6px 14px;
+    background: var(--green-pale);
+    border-radius: 20px;
+    font-size: 1rem;
+    color: var(--green);
+    font-weight: bold;
+    border: 2px solid var(--border);
+    font-family: 'Courier New', monospace;
+    transition: all 0.3s;
+  }
+  .ns-number.found { text-decoration: line-through; background: var(--green); color: white; border-color: var(--green); }
+
+  /* ---- WORD FILL ---- */
+  .wf-clues { max-width: 600px; margin: 0 auto 20px; }
+  .wf-clue {
+    display: flex; align-items: flex-start; gap: 12px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border);
+    flex-wrap: wrap;
+  }
+  .wf-clue-num {
+    font-size: 0.85rem; color: var(--text-soft);
+    width: 26px; text-align: right; flex-shrink: 0; padding-top: 4px;
+  }
+  .wf-clue-text { flex: 1; line-height: 1.5; min-width: 200px; }
+  .wf-input {
+    border: 2px solid var(--border);
+    border-radius: 8px;
+    padding: 6px 12px;
+    font-size: 1rem;
+    font-family: 'Georgia', serif;
+    background: var(--bg);
+    color: var(--text);
+    width: 180px;
+    text-transform: uppercase;
+    transition: border 0.2s;
+  }
+  .wf-input:focus { outline: none; border-color: var(--green-light); }
+  .wf-input.correct { border-color: var(--green); background: var(--green-pale); }
+  .wf-input.wrong { border-color: var(--accent); background: #fde8e0; }
+
+  /* ---- NUMBER FILL ---- */
+  .nf-container { max-width: 500px; margin: 0 auto; }
+  #nf-grid {
+    display: grid;
+    gap: 3px;
+    margin-bottom: 20px;
+  }
+  .nf-cell {
+    background: var(--card);
+    border: 2px solid var(--border);
+    border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    aspect-ratio: 1;
+    font-size: 1rem;
+    font-weight: bold;
+    font-family: 'Courier New', monospace;
+    cursor: pointer;
+    transition: all 0.15s;
+    position: relative;
+  }
+  .nf-cell.given { background: var(--green-pale); color: var(--green); border-color: var(--green-light); cursor: default; }
+  .nf-cell.selected { background: var(--green-pale); border-color: var(--green); }
+  .nf-cell.user-input { color: var(--accent); }
+  .nf-cell.error { color: #c0392b; background: #fde8e8; }
+  #nf-numpad {
+    display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin-top: 12px;
+  }
+
+  /* ---- MAZES ---- */
+  #maze-canvas {
+    display: block;
+    margin: 0 auto;
+    border-radius: 8px;
+    border: 3px solid var(--green);
+    cursor: crosshair;
+    touch-action: none;
+  }
+  #maze-container { text-align: center; }
+  #maze-message {
+    font-size: 1.1rem; color: var(--green);
+    font-weight: bold; margin-top: 12px;
+    min-height: 28px;
+  }
+
+  /* SOLUTION BOX */
+  .solution-box {
+    margin-top: 20px;
+    background: var(--green-pale);
+    border-radius: 12px;
+    padding: 16px 20px;
+    border: 2px solid var(--green-light);
+    display: none;
+  }
+  .solution-box h4 { color: var(--green); margin-bottom: 10px; font-size: 1rem; }
+  .solution-box p, .solution-box div { color: var(--text); font-size: 0.95rem; line-height: 1.7; }
+
+  /* SCORE */
+  .score-badge {
+    display: inline-block;
+    background: var(--green);
+    color: white;
+    padding: 5px 14px;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    margin-top: 8px;
+  }
+
+  /* TOAST */
+  #toast {
+    position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
+    background: var(--green);
+    color: white;
+    padding: 12px 28px;
+    border-radius: 30px;
+    font-size: 1rem;
+    box-shadow: 0 6px 24px rgba(0,0,0,0.2);
+    opacity: 0;
+    transition: opacity 0.3s;
+    pointer-events: none;
+    z-index: 999;
+    white-space: nowrap;
+  }
+  #toast.show { opacity: 1; }
+
+  /* ---- DAILY QUOTE ---- */
+  .daily-quote {
+    background: var(--green);
+    color: white;
+    border-radius: var(--radius);
+    padding: 20px 28px;
+    margin-bottom: 20px;
+    text-align: center;
+    font-size: 1.1rem;
+    font-style: italic;
+    line-height: 1.7;
+    box-shadow: var(--shadow);
+  }
+  .daily-quote .quote-author { font-size: 0.85rem; opacity: 0.8; margin-top: 8px; font-style: normal; }
+
+  /* ---- DIFFICULTY ---- */
+  .diff-selector {
+    display: flex; gap: 8px; align-items: center; flex-wrap: wrap;
+  }
+  .diff-selector label { font-size: 0.85rem; color: var(--text-soft); margin-right: 4px; }
+  .diff-btn {
+    padding: 5px 14px;
+    border-radius: 20px;
+    border: 2px solid var(--border);
+    background: none;
+    color: var(--text-soft);
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-family: 'Georgia', serif;
+    transition: all 0.2s;
+  }
+  .diff-btn.active { background: var(--green); color: white; border-color: var(--green); }
+
+  /* ---- PRINT ---- */
+  .btn-print { background: none; border-color: var(--green-light); color: var(--green); }
+  .btn-print:hover { background: var(--green-pale); }
+  @media print {
+    header, .back-btn, .btn-group, .diff-selector, #toast { display: none !important; }
+    .puzzle-screen { display: block !important; }
+    #home-screen { display: none !important; }
+    body { background: white; font-size: 14px; }
+    .puzzle-content { box-shadow: none; border: none; padding: 0; }
+    .solution-box { display: none !important; }
+  }
+
+  /* ---- MEMORY GAME ---- */
+  .memory-grid {
+    display: grid;
+    gap: 10px;
+    justify-content: center;
+    max-width: 560px;
+    margin: 0 auto 20px;
+  }
+  .mem-card {
+    aspect-ratio: 1;
+    cursor: pointer;
+    perspective: 600px;
+    min-width: 70px;
+  }
+  .mem-card-inner {
+    width: 100%; height: 100%;
+    position: relative;
+    transform-style: preserve-3d;
+    transition: transform 0.45s;
+    border-radius: 12px;
+  }
+  .mem-card.flipped .mem-card-inner { transform: rotateY(180deg); }
+  .mem-card-front, .mem-card-back {
+    position: absolute; inset: 0;
+    backface-visibility: hidden;
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.3rem;
+    font-weight: bold;
+    border: 2px solid var(--border);
+  }
+  .mem-card-front {
+    background: var(--green);
+    color: white;
+    font-size: 1.6rem;
+  }
+  .mem-card-back {
+    background: var(--card);
+    color: var(--green);
+    transform: rotateY(180deg);
+    text-align: center;
+    padding: 6px;
+    line-height: 1.3;
+    font-size: 0.95rem;
+  }
+  .mem-card.matched .mem-card-back { background: var(--green-pale); border-color: var(--green); }
+  #mem-stats { text-align: center; margin-bottom: 12px; color: var(--text-soft); font-size: 0.95rem; }
+
+  /* ---- CROSSWORD ---- */
+  #cw-container { display: flex; gap: 28px; flex-wrap: wrap; justify-content: center; }
+  #cw-grid-wrap { overflow-x: auto; }
+  table#cw-grid { border-collapse: collapse; }
+  table#cw-grid td {
+    width: 2rem; height: 2rem;
+    border: 1.5px solid var(--border);
+    position: relative;
+    padding: 0;
+  }
+  table#cw-grid td.black { background: var(--text); border-color: var(--text); }
+  table#cw-grid td input {
+    width: 100%; height: 100%;
+    border: none; outline: none;
+    background: transparent;
+    text-align: center;
+    font-size: 1rem;
+    font-weight: bold;
+    text-transform: uppercase;
+    color: var(--text);
+    font-family: 'Georgia', serif;
+    cursor: pointer;
+    padding: 0;
+  }
+  table#cw-grid td input.selected-cell { background: var(--green-pale); }
+  table#cw-grid td input.correct-cell { background: #d4edda; color: var(--green); }
+  table#cw-grid td input.error-cell { background: #fde8e8; color: #c0392b; }
+  .cw-num {
+    position: absolute; top: 1px; left: 2px;
+    font-size: 0.55rem; color: var(--text-soft);
+    pointer-events: none; line-height: 1;
+  }
+  .cw-clues { max-width: 280px; }
+  .cw-clues h4 { color: var(--green); margin-bottom: 8px; font-size: 1rem; }
+  .cw-clue-item {
+    font-size: 0.9rem; line-height: 1.5;
+    padding: 4px 0; border-bottom: 1px solid var(--border);
+    cursor: pointer; transition: color 0.15s;
+  }
+  .cw-clue-item:hover { color: var(--green); }
+  .cw-clue-item.done { text-decoration: line-through; color: var(--text-soft); }
+
+  /* ---- HEADER CONTROLS ---- */
+  .header-controls { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; justify-content: flex-end; }
+  .hbtn {
+    background: rgba(255,255,255,0.18); border: 1.5px solid rgba(255,255,255,0.4);
+    color: white; padding: 5px 10px; border-radius: 20px; cursor: pointer;
+    font-size: 0.8rem; font-family: 'Georgia', serif; transition: all 0.2s; white-space: nowrap;
+  }
+  .hbtn:hover { background: rgba(255,255,255,0.35); }
+  .hbtn.active { background: white; color: var(--green); }
+
+  /* ---- STREAK ---- */
+  .streak-bar {
+    background: var(--card); border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 14px 20px; margin-bottom: 16px; display: flex; align-items: center;
+    gap: 16px; flex-wrap: wrap; box-shadow: var(--shadow);
+  }
+  .streak-item { text-align: center; }
+  .streak-num { font-size: 1.8rem; font-weight: bold; color: var(--green); line-height: 1; }
+  .streak-label { font-size: 0.78rem; color: var(--text-soft); margin-top: 2px; }
+  .record-item { background: var(--green-pale); border-radius: 10px; padding: 6px 14px; font-size: 0.85rem; color: var(--green); }
+
+  /* ---- TRIVIA ---- */
+  .trivia-question {
+    background: var(--card); border-radius: var(--radius); padding: 24px 28px;
+    border: 1px solid var(--border); box-shadow: var(--shadow); margin-bottom: 20px;
+  }
+  .trivia-q-text { font-size: 1.2rem; line-height: 1.6; margin-bottom: 20px; color: var(--text); }
+  .trivia-q-num { font-size: 0.85rem; color: var(--text-soft); margin-bottom: 8px; }
+  .trivia-options { display: flex; flex-direction: column; gap: 10px; }
+  .trivia-opt {
+    padding: 12px 18px; border: 2px solid var(--border); border-radius: 12px;
+    background: var(--bg); cursor: pointer; font-size: 1rem; font-family: 'Georgia', serif;
+    color: var(--text); transition: all 0.2s; text-align: left;
+  }
+  .trivia-opt:hover:not(:disabled) { border-color: var(--green-light); background: var(--green-pale); }
+  .trivia-opt.correct { border-color: var(--green); background: var(--green-pale); color: var(--green); font-weight: bold; }
+  .trivia-opt.wrong { border-color: var(--accent); background: #fde8e0; color: var(--accent); }
+  .trivia-opt:disabled { cursor: default; }
+  .trivia-progress { height: 6px; background: var(--border); border-radius: 3px; margin-bottom: 20px; overflow: hidden; }
+  .trivia-progress-bar { height: 100%; background: var(--green); border-radius: 3px; transition: width 0.4s; }
+  #trivia-result { text-align: center; margin-top: 16px; font-size: 1.1rem; font-weight: bold; color: var(--green); min-height: 28px; }
+  #trivia-score-display { text-align: center; margin-top: 8px; }
+
+  /* ---- BREATHING ---- */
+  #breathing-container { text-align: center; padding: 20px 0; }
+  #breath-circle-wrap { position: relative; width: 220px; height: 220px; margin: 0 auto 20px; }
+  #breath-ring {
+    position: absolute; inset: 0; border-radius: 50%;
+    border: 3px solid var(--green-light); opacity: 0.3;
+  }
+  #breath-circle {
+    position: absolute; inset: 20px; border-radius: 50%;
+    background: radial-gradient(circle, var(--green-pale) 0%, var(--green-light) 100%);
+    transition: transform 0s;
+    display: flex; align-items: center; justify-content: center;
+  }
+  #breath-emoji { font-size: 2.8rem; }
+  #breath-phase {
+    font-size: 1.5rem; font-weight: bold; color: var(--green);
+    margin-bottom: 8px; min-height: 2rem;
+  }
+  #breath-counter {
+    font-size: 3rem; font-weight: bold; color: var(--green);
+    min-height: 3.5rem; line-height: 1;
+  }
+  #breath-instruction { font-size: 1rem; color: var(--text-soft); margin-top: 8px; min-height: 1.4rem; }
+  #breath-cycles { font-size: 0.9rem; color: var(--text-soft); margin-top: 16px; }
+  .breath-pattern-btns { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin-bottom: 20px; }
+  .breath-pattern-btn {
+    padding: 7px 16px; border-radius: 20px; border: 2px solid var(--border);
+    background: none; color: var(--text-soft); cursor: pointer;
+    font-family: 'Georgia', serif; font-size: 0.9rem; transition: all 0.2s;
+  }
+  .breath-pattern-btn.active { background: var(--green); color: white; border-color: var(--green); }
+  #breath-start-btn {
+    padding: 12px 36px; background: var(--green); color: white; border: none;
+    border-radius: 30px; font-size: 1.1rem; font-family: 'Georgia', serif;
+    cursor: pointer; transition: all 0.2s; margin-top: 12px;
+  }
+  #breath-start-btn:hover { background: var(--green-light); }
+
+  /* ---- COLORING PAGE ---- */
+  #color-container { text-align: center; }
+  #coloring-svg { max-width: 480px; width: 100%; cursor: crosshair; display: block; margin: 0 auto 16px; border-radius: 12px; border: 2px solid var(--border); box-shadow: var(--shadow); }
+  #coloring-svg path, #coloring-svg circle, #coloring-svg ellipse, #coloring-svg rect, #coloring-svg polygon {
+    transition: opacity 0.1s; cursor: pointer;
+  }
+  #coloring-svg path:hover, #coloring-svg circle:hover, #coloring-svg ellipse:hover, #coloring-svg rect:hover, #coloring-svg polygon:hover { opacity: 0.85; }
+  .color-palette { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin: 12px auto; max-width: 480px; }
+  .color-swatch {
+    width: 38px; height: 38px; border-radius: 50%; cursor: pointer;
+    border: 3px solid transparent; transition: all 0.15s; box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+  }
+  .color-swatch.active { border-color: var(--text); transform: scale(1.2); }
+  .color-swatch:hover { transform: scale(1.15); }
+  #color-actions { display: flex; gap: 10px; justify-content: center; margin-top: 10px; flex-wrap: wrap; }
+
+  /* ---- JIGSAW ---- */
+  #jigsaw-container { text-align: center; }
+  #jigsaw-board {
+    position: relative; margin: 0 auto 16px;
+    border: 3px solid var(--green); border-radius: 12px;
+    background: var(--bg); overflow: hidden;
+    box-shadow: var(--shadow);
+  }
+  #jigsaw-preview { display: block; margin: 0 auto 12px; border-radius: 8px; border: 2px solid var(--border); opacity: 0.85; max-width: 180px; }
+  .jigsaw-piece {
+    position: absolute; cursor: grab; transition: box-shadow 0.15s;
+    border: 2px solid rgba(255,255,255,0.6);
+    box-sizing: border-box;
+  }
+  .jigsaw-piece:active { cursor: grabbing; }
+  .jigsaw-piece.dragging { box-shadow: 0 8px 24px rgba(0,0,0,0.3); z-index: 100; border-color: var(--green); }
+  .jigsaw-piece.placed { border-color: var(--green); cursor: default; }
+  #jigsaw-message { font-size: 1.1rem; color: var(--green); font-weight: bold; min-height: 28px; margin-top: 8px; }
+  #jigsaw-hint-canvas { display: none; }
+
+  /* RESPONSIVE */
+  @media (max-width: 600px) {
+    /* --- Header: stack title + controls on 2 lines --- */
+    header {
+      flex-direction: column;
+      align-items: flex-start;
+      padding: 10px 14px;
+      gap: 8px;
+    }
+    header h1 { font-size: 1rem; }
+    header .subtitle { font-size: 0.72rem; }
+    .header-controls { width: 100%; justify-content: flex-start; gap: 4px; }
+    .hbtn { padding: 4px 7px; font-size: 0.7rem; }
+
+    /* --- Main padding --- */
+    main { padding: 14px 10px 40px; }
+
+    /* --- Home cards: 1 column --- */
+    .puzzle-grid { grid-template-columns: 1fr; }
+
+    /* --- Puzzle header: stack title + buttons --- */
+    .puzzle-header { flex-direction: column; align-items: flex-start; }
+
+    /* --- Action buttons: stack vertically, full width --- */
+    .btn-group { flex-direction: column; width: 100%; gap: 8px; }
+    .btn-group > .btn { width: 100%; text-align: center; }
+    .diff-selector { flex-wrap: wrap; }
+
+    /* --- Puzzle content: less padding --- */
+    .puzzle-content { padding: 12px 10px; }
+
+    /* --- Word search: vw-based font so 14 cols always fit --- */
+    #ws-grid { font-size: 4.5vw; }
+    #ws-container { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+
+    /* --- Number search: vw-based font --- */
+    #ns-grid { font-size: 4vw; }
+    #ns-container { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+
+    /* --- Sudoku: fits naturally via width:100%, shrink numpad --- */
+    #sudoku-grid { max-width: 100%; }
+    .num-btn { width: 2rem; height: 2rem; font-size: 1rem; }
+    #sudoku-numpad { gap: 5px; }
+
+    /* --- Crossword: stack grid + clues, allow horizontal scroll --- */
+    #cw-container { flex-direction: column; }
+    #cw-grid-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; width: 100%; }
+    .cw-clues { max-width: 100%; width: 100%; }
+    table#cw-grid td { width: 1.6rem; height: 1.6rem; }
+
+    /* --- Memory game: prevent card overflow --- */
+    .memory-grid { max-width: 100% !important; width: 100%; }
+    .mem-card { min-width: 0; }
+
+    /* --- Jigsaw: horizontal scroll if needed --- */
+    #jigsaw-container { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+
+    /* --- Coloring: horizontal scroll if needed --- */
+    #coloring-svg-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+
+    /* --- Streak bar: wrap items --- */
+    .streak-bar { gap: 10px; }
+    .streak-num { font-size: 1.4rem; }
+
+    /* --- Scramble: reduce min-widths --- */
+    .scramble-word { min-width: 110px; }
+    .scramble-input { min-width: 90px; }
+
+    /* --- Daily quote: smaller padding --- */
+    .daily-quote { padding: 14px 16px; font-size: 1rem; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <div class="leaf" style="font-size:1.2rem; display:inline; margin-right:8px;">🌿</div>
+    <span id="h-title">Puzzle Bundle</span>
+    <div class="subtitle" id="h-subtitle">Mindful · Positive · Affirmative</div>
+    <!-- subtitle intentionally left in English as default -->
+  </div>
+  <div class="header-controls">
+    <button class="hbtn active" onclick="setFontSize('normal')" id="fs-normal">A</button>
+    <button class="hbtn" onclick="setFontSize('lg')" id="fs-lg">A+</button>
+    <button class="hbtn" onclick="setFontSize('xl')" id="fs-xl">A++</button>
+    <button class="hbtn" onclick="toggleContrast()" id="contrast-btn">◑</button>
+    <button class="hbtn" onclick="toggleDark()" id="dark-btn">🌙</button>
+    <button class="hbtn" onclick="toggleLang()" id="lang-btn">🌐 EN</button>
+  </div>
+</header>
+
+<main>
+  <!-- HOME -->
+  <div id="home-screen">
+    <div class="daily-quote" id="daily-quote-box">
+      <div id="daily-quote-text"></div>
+      <div class="quote-author" id="daily-quote-author"></div>
+    </div>
+    <div class="streak-bar" id="streak-bar">
+      <div class="streak-item">
+        <div class="streak-num" id="streak-num">1</div>
+        <div class="streak-label" id="streak-label">day in a row</div>
+      </div>
+      <div class="streak-item">
+        <div class="streak-num" id="total-completed">0</div>
+        <div class="streak-label" id="total-label">completed</div>
+      </div>
+      <div style="flex:1"></div>
+      <div id="records-display"></div>
+    </div>
+    <div class="home-hero">
+      <div class="leaf">🌿</div>
+      <h2 id="home-title">Bienvenido a tu momento de calma</h2>
+      <p id="home-desc">11 actividades para estimular tu mente y disfrutar cada momento.<br>Elige tu favorita y comienza cuando quieras.</p>
+    </div>
+    <div class="puzzle-grid" id="puzzle-grid"></div>
+  </div>
+
+  <!-- WORD SEARCH -->
+  <div class="puzzle-screen" id="screen-ws">
+    <button class="back-btn" onclick="goHome()">← <span data-t="back">Volver</span></button>
+    <div class="puzzle-header">
+      <div>
+        <h2 id="ws-title">🔤 Sopa de Letras</h2>
+        <p id="ws-desc">Encuentra todas las palabras en la cuadrícula</p>
+      </div>
+      <div class="btn-group">
+        <div class="diff-selector">
+          <label data-t="diff-label">Nivel:</label>
+          <button class="diff-btn active" onclick="setDiff('ws','easy',this)" data-t="easy">Fácil</button>
+          <button class="diff-btn" onclick="setDiff('ws','normal',this)" data-t="normal">Normal</button>
+          <button class="diff-btn" onclick="setDiff('ws','hard',this)" data-t="hard">Difícil</button>
+        </div>
+        <button class="btn btn-outline btn-print" onclick="window.print()">🖨️ <span data-t="print">Imprimir</span></button>
+        <button class="btn btn-outline" onclick="toggleSolution('ws-sol')" data-t="see-sol">Ver Solución</button>
+        <button class="btn btn-primary" onclick="initWordSearch()" data-t="new">Nuevo Puzzle</button>
+      </div>
+    </div>
+    <div class="puzzle-content">
+      <div id="ws-container">
+        <div id="ws-grid"></div>
+      </div>
+      <div class="ws-word-list" id="ws-word-list"></div>
+      <div id="ws-score" style="text-align:center; margin-top:12px;"></div>
+      <div class="solution-box" id="ws-sol">
+        <h4 data-t="sol-title">Solución</h4>
+        <div id="ws-sol-content"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SUDOKU -->
+  <div class="puzzle-screen" id="screen-sudoku">
+    <button class="back-btn" onclick="goHome()">← <span data-t="back">Volver</span></button>
+    <div class="puzzle-header">
+      <div>
+        <h2 id="sudoku-title">🔢 Sudoku</h2>
+        <p id="sudoku-desc">Llena la cuadrícula con números del 1 al 9</p>
+      </div>
+      <div class="btn-group">
+        <div class="diff-selector">
+          <label data-t="diff-label">Nivel:</label>
+          <button class="diff-btn active" onclick="setDiff('sudoku','easy',this)" data-t="easy">Fácil</button>
+          <button class="diff-btn" onclick="setDiff('sudoku','hard',this)" data-t="hard">Difícil</button>
+        </div>
+        <button class="btn btn-outline btn-print" onclick="window.print()">🖨️ <span data-t="print">Imprimir</span></button>
+        <button class="btn btn-outline" onclick="toggleSolution('sudoku-sol')" data-t="see-sol">Ver Solución</button>
+        <button class="btn btn-primary" onclick="initSudoku(true)" data-t="new">Nuevo Puzzle</button>
+      </div>
+    </div>
+    <div class="puzzle-content">
+      <div id="sudoku-grid"></div>
+      <div id="sudoku-numpad"></div>
+      <div class="solution-box" id="sudoku-sol">
+        <h4 data-t="sol-title">Solución</h4>
+        <div id="sudoku-sol-content"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- WORD SCRAMBLE -->
+  <div class="puzzle-screen" id="screen-scramble">
+    <button class="back-btn" onclick="goHome()">← <span data-t="back">Volver</span></button>
+    <div class="puzzle-header">
+      <div>
+        <h2 id="scramble-title">🔀 Palabras Desordenadas</h2>
+        <p id="scramble-desc">Ordena las letras para formar la palabra correcta</p>
+      </div>
+      <div class="btn-group">
+        <button class="btn btn-outline btn-print" onclick="window.print()">🖨️ <span data-t="print">Imprimir</span></button>
+        <button class="btn btn-outline" onclick="checkAllScramble()" data-t="check">Verificar</button>
+        <button class="btn btn-outline" onclick="toggleSolution('scramble-sol')" data-t="see-sol">Ver Solución</button>
+        <button class="btn btn-primary" onclick="initScramble()" data-t="new">Nuevo Puzzle</button>
+      </div>
+    </div>
+    <div class="puzzle-content">
+      <div class="scramble-list" id="scramble-list"></div>
+      <div id="scramble-score" style="text-align:center; margin-top:12px;"></div>
+      <div class="solution-box" id="scramble-sol">
+        <h4 data-t="sol-title">Solución</h4>
+        <div id="scramble-sol-content"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- NUMBER SEARCH -->
+  <div class="puzzle-screen" id="screen-ns">
+    <button class="back-btn" onclick="goHome()">← <span data-t="back">Volver</span></button>
+    <div class="puzzle-header">
+      <div>
+        <h2 id="ns-title">🔍 Búsqueda de Números</h2>
+        <p id="ns-desc">Encuentra las secuencias de números en la cuadrícula</p>
+      </div>
+      <div class="btn-group">
+        <button class="btn btn-outline btn-print" onclick="window.print()">🖨️ <span data-t="print">Imprimir</span></button>
+        <button class="btn btn-outline" onclick="toggleSolution('ns-sol')" data-t="see-sol">Ver Solución</button>
+        <button class="btn btn-primary" onclick="initNumberSearch()" data-t="new">Nuevo Puzzle</button>
+      </div>
+    </div>
+    <div class="puzzle-content">
+      <div id="ns-container">
+        <div id="ns-grid"></div>
+      </div>
+      <div class="ns-number-list" id="ns-number-list"></div>
+      <div id="ns-score" style="text-align:center; margin-top:12px;"></div>
+      <div class="solution-box" id="ns-sol">
+        <h4 data-t="sol-title">Solución</h4>
+        <div id="ns-sol-content"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- WORD FILL -->
+  <div class="puzzle-screen" id="screen-wf">
+    <button class="back-btn" onclick="goHome()">← <span data-t="back">Volver</span></button>
+    <div class="puzzle-header">
+      <div>
+        <h2 id="wf-title">✏️ Completar Palabras</h2>
+        <p id="wf-desc">Lee la pista y escribe la palabra correcta</p>
+      </div>
+      <div class="btn-group">
+        <button class="btn btn-outline btn-print" onclick="window.print()">🖨️ <span data-t="print">Imprimir</span></button>
+        <button class="btn btn-outline" onclick="checkAllWordFill()" data-t="check">Verificar</button>
+        <button class="btn btn-outline" onclick="toggleSolution('wf-sol')" data-t="see-sol">Ver Solución</button>
+        <button class="btn btn-primary" onclick="initWordFill()" data-t="new">Nuevo Puzzle</button>
+      </div>
+    </div>
+    <div class="puzzle-content">
+      <div class="wf-clues" id="wf-clues"></div>
+      <div id="wf-score" style="text-align:center; margin-top:12px;"></div>
+      <div class="solution-box" id="wf-sol">
+        <h4 data-t="sol-title">Solución</h4>
+        <div id="wf-sol-content"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- NUMBER FILL -->
+  <div class="puzzle-screen" id="screen-nf">
+    <button class="back-btn" onclick="goHome()">← <span data-t="back">Volver</span></button>
+    <div class="puzzle-header">
+      <div>
+        <h2 id="nf-title">🧩 Rellena los Números</h2>
+        <p id="nf-desc">Completa la secuencia numérica en la cuadrícula</p>
+      </div>
+      <div class="btn-group">
+        <button class="btn btn-outline btn-print" onclick="window.print()">🖨️ <span data-t="print">Imprimir</span></button>
+        <button class="btn btn-outline" onclick="toggleSolution('nf-sol')" data-t="see-sol">Ver Solución</button>
+        <button class="btn btn-primary" onclick="initNumberFill()" data-t="new">Nuevo Puzzle</button>
+      </div>
+    </div>
+    <div class="puzzle-content">
+      <div class="nf-container">
+        <div id="nf-grid"></div>
+        <div id="nf-numpad"></div>
+      </div>
+      <div class="solution-box" id="nf-sol">
+        <h4 data-t="sol-title">Solución</h4>
+        <div id="nf-sol-content"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CROSSWORD -->
+  <div class="puzzle-screen" id="screen-cw">
+    <button class="back-btn" onclick="goHome()">← <span data-t="back">Volver</span></button>
+    <div class="puzzle-header">
+      <div>
+        <h2 id="cw-title">📝 Crucigrama</h2>
+        <p id="cw-desc">Completa el crucigrama usando las pistas</p>
+      </div>
+      <div class="btn-group">
+        <div class="diff-selector">
+          <label data-t="diff-label">Nivel:</label>
+          <button class="diff-btn active" onclick="setCWDiff('easy',this)" data-t="easy">Fácil</button>
+          <button class="diff-btn" onclick="setCWDiff('hard',this)" data-t="hard">Difícil</button>
+        </div>
+        <button class="btn btn-outline btn-print" onclick="window.print()">🖨️ <span data-t="print">Imprimir</span></button>
+        <button class="btn btn-outline" onclick="checkCrossword()" data-t="check">Verificar</button>
+        <button class="btn btn-outline" onclick="toggleSolution('cw-sol')" data-t="see-sol">Ver Solución</button>
+        <button class="btn btn-primary" onclick="initCrossword()" data-t="new">Nuevo</button>
+      </div>
+    </div>
+    <div class="puzzle-content">
+      <div id="cw-container">
+        <div id="cw-grid-wrap"><table id="cw-grid"></table></div>
+        <div id="cw-clues-container" class="cw-clues"></div>
+      </div>
+      <div class="solution-box" id="cw-sol">
+        <h4 data-t="sol-title">Solución</h4>
+        <div id="cw-sol-content"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MEMORY GAME -->
+  <div class="puzzle-screen" id="screen-mem">
+    <button class="back-btn" onclick="goHome()">← <span data-t="back">Volver</span></button>
+    <div class="puzzle-header">
+      <div>
+        <h2 id="mem-title">🃏 Juego de Memoria</h2>
+        <p id="mem-desc">Encuentra todas las parejas de palabras</p>
+      </div>
+      <div class="btn-group">
+        <div class="diff-selector">
+          <label data-t="diff-label">Nivel:</label>
+          <button class="diff-btn active" onclick="setMemDiff(8,this)" data-t="easy">Fácil</button>
+          <button class="diff-btn" onclick="setMemDiff(12,this)" data-t="medium">Normal</button>
+          <button class="diff-btn" onclick="setMemDiff(16,this)" data-t="hard">Difícil</button>
+        </div>
+        <button class="btn btn-primary" onclick="initMemory()" data-t="new">Nuevo Juego</button>
+      </div>
+    </div>
+    <div class="puzzle-content">
+      <div id="mem-stats"></div>
+      <div class="memory-grid" id="memory-grid"></div>
+    </div>
+  </div>
+
+  <!-- MAZES -->
+  <div class="puzzle-screen" id="screen-maze">
+    <button class="back-btn" onclick="goHome()">← <span data-t="back">Volver</span></button>
+    <div class="puzzle-header">
+      <div>
+        <h2 id="maze-title">🌀 Laberinto</h2>
+        <p id="maze-desc">Encuentra el camino de salida</p>
+      </div>
+      <div class="btn-group">
+        <button class="btn btn-outline btn-print" onclick="window.print()">🖨️ <span data-t="print">Imprimir</span></button>
+        <button class="btn btn-outline" onclick="solveMaze()" data-t="see-sol">Ver Solución</button>
+        <button class="btn btn-primary" onclick="initMaze()" data-t="new">Nuevo Laberinto</button>
+      </div>
+    </div>
+    <div class="puzzle-content">
+      <div id="maze-container">
+        <canvas id="maze-canvas" width="500" height="500"></canvas>
+        <div id="maze-message"></div>
+        <div style="margin-top:12px; color:var(--text-soft); font-size:0.9rem;" id="maze-hint"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TRIVIA -->
+  <div class="puzzle-screen" id="screen-trivia">
+    <button class="back-btn" onclick="goHome()">← <span data-t="back">Volver</span></button>
+    <div class="puzzle-header">
+      <div>
+        <h2 id="trivia-title">🧠 Trivia</h2>
+        <p id="trivia-desc">Pon a prueba tus conocimientos de cultura general</p>
+      </div>
+      <div class="btn-group">
+        <div class="diff-selector">
+          <label data-t="diff-label">Nivel:</label>
+          <button class="diff-btn active" onclick="setTriviaDiff('easy',this)" data-t="easy">Fácil</button>
+          <button class="diff-btn" onclick="setTriviaDiff('hard',this)" data-t="hard">Difícil</button>
+          <button class="diff-btn" onclick="setTriviaDiff('nostalgia',this)" data-t="nostalgia">Nostalgia</button>
+        </div>
+        <button class="btn btn-primary" onclick="initTrivia()" data-t="new">Nueva Trivia</button>
+      </div>
+    </div>
+    <div class="puzzle-content">
+      <div class="trivia-progress"><div class="trivia-progress-bar" id="trivia-progress-bar"></div></div>
+      <div id="trivia-question-box" class="trivia-question"></div>
+      <div id="trivia-result"></div>
+      <div id="trivia-score-display"></div>
+    </div>
+  </div>
+
+  <!-- COLORING PAGE -->
+  <div class="puzzle-screen" id="screen-color">
+    <button class="back-btn" onclick="goHome()">← <span data-t="back">Back</span></button>
+    <div class="puzzle-header">
+      <div>
+        <h2 id="color-title">🎨 Coloring Page</h2>
+        <p id="color-desc">Tap any region and choose a color to fill it</p>
+      </div>
+      <div class="btn-group">
+        <button class="btn btn-outline" onclick="undoColor()" data-t="undo">Undo</button>
+        <button class="btn btn-outline" onclick="resetColoring()" data-t="reset">Reset</button>
+        <button class="btn btn-outline btn-print" onclick="window.print()">🖨️ <span data-t="print">Print</span></button>
+        <button class="btn btn-primary" onclick="nextColorScene()" data-t="new-scene">New Scene</button>
+      </div>
+    </div>
+    <div class="puzzle-content">
+      <div id="color-container">
+        <div id="coloring-svg-wrap"></div>
+        <div class="color-palette" id="color-palette"></div>
+        <div id="color-actions"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- JIGSAW -->
+  <div class="puzzle-screen" id="screen-jigsaw">
+    <button class="back-btn" onclick="goHome()">← <span data-t="back">Back</span></button>
+    <div class="puzzle-header">
+      <div>
+        <h2 id="jigsaw-title">🧩 Jigsaw Puzzle</h2>
+        <p id="jigsaw-desc">Drag the pieces to complete the picture</p>
+      </div>
+      <div class="btn-group">
+        <div class="diff-selector">
+          <label data-t="diff-label">Level:</label>
+          <button class="diff-btn active" onclick="setJigsawDiff(3,this)" data-t="easy">Easy</button>
+          <button class="diff-btn" onclick="setJigsawDiff(4,this)" data-t="normal">Normal</button>
+          <button class="diff-btn" onclick="setJigsawDiff(5,this)" data-t="hard">Hard</button>
+        </div>
+        <button class="btn btn-primary" onclick="initJigsaw()" data-t="new">New Puzzle</button>
+      </div>
+    </div>
+    <div class="puzzle-content">
+      <div id="jigsaw-container">
+        <div style="font-size:0.85rem;color:var(--text-soft);text-align:center;margin-bottom:8px;" id="jigsaw-hint-label">Reference:</div>
+        <canvas id="jigsaw-hint-canvas"></canvas>
+        <img id="jigsaw-preview" alt="reference"/>
+        <div id="jigsaw-board"></div>
+        <div id="jigsaw-message"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- BREATHING -->
+  <div class="puzzle-screen" id="screen-breath">
+    <button class="back-btn" onclick="goHome(); stopBreath();">← <span data-t="back">Volver</span></button>
+    <div class="puzzle-header">
+      <div>
+        <h2 id="breath-title">🌬️ Respiración</h2>
+        <p id="breath-desc">Ejercicio guiado para calmar la mente</p>
+      </div>
+    </div>
+    <div class="puzzle-content">
+      <div class="breath-pattern-btns">
+        <button class="breath-pattern-btn active" onclick="setBreathPattern('478',this)" id="bp-478">4-7-8</button>
+        <button class="breath-pattern-btn" onclick="setBreathPattern('box',this)" id="bp-box" data-t="bp-box">Box</button>
+        <button class="breath-pattern-btn" onclick="setBreathPattern('calm',this)" id="bp-calm" data-t="bp-calm">Calm</button>
+      </div>
+      <div id="breathing-container">
+        <div id="breath-circle-wrap">
+          <div id="breath-ring"></div>
+          <div id="breath-circle"><span id="breath-emoji">🌿</span></div>
+        </div>
+        <div id="breath-phase"></div>
+        <div id="breath-counter"></div>
+        <div id="breath-instruction"></div>
+        <div id="breath-cycles"></div>
+        <button id="breath-start-btn" onclick="toggleBreath()" data-t="breath-start">Start</button>
+      </div>
+    </div>
+  </div>
+</main>
+
+<div id="toast"></div>
+
+<script>
+// ===================== TRANSLATIONS =====================
+const T = {
+  es: {
+    'h-title': 'Puzzle Bundle',
+    'h-subtitle': 'Mindful · Positivo · Afirmativo',
+    'home-title': 'Bienvenido a tu momento de calma',
+    'home-desc': '7 tipos de puzzles para estimular tu mente y disfrutar cada momento.<br>Elige tu actividad favorita y comienza cuando quieras.',
+    'back': 'Volver',
+    'new': 'Nuevo Puzzle',
+    'check': 'Verificar',
+    'see-sol': 'Ver Solución',
+    'sol-title': 'Solución',
+    'ws-title': '🔤 Sopa de Letras',
+    'ws-desc': 'Encuentra todas las palabras en la cuadrícula',
+    'sudoku-title': '🔢 Sudoku',
+    'sudoku-desc': 'Llena la cuadrícula: cada fila, columna y cuadro 3×3 debe tener los números del 1 al 9',
+    'scramble-title': '🔀 Palabras Desordenadas',
+    'scramble-desc': 'Ordena las letras para formar la palabra correcta',
+    'ns-title': '🔍 Búsqueda de Números',
+    'ns-desc': 'Encuentra las secuencias de números en la cuadrícula',
+    'wf-title': '✏️ Completar Palabras',
+    'wf-desc': 'Lee la pista y escribe la palabra correcta',
+    'nf-title': '🧩 Rellena los Números',
+    'nf-desc': 'Completa la secuencia numérica en la cuadrícula',
+    'maze-title': '🌀 Laberinto',
+    'maze-desc': 'Encuentra el camino de salida — haz clic y arrastra',
+    'maze-hint': 'Haz clic en la entrada (verde) y arrastra hasta la salida (rojo)',
+    'maze-win': '¡Felicidades! ¡Encontraste la salida! 🎉',
+    'score': 'Encontradas',
+    'of': 'de',
+    'well-done': '¡Muy bien! Completaste el puzzle 🌿',
+    'lang-btn': '🌐 EN',
+    'diff-label': 'Nivel:',
+    'easy': 'Fácil', 'normal': 'Normal', 'medium': 'Normal', 'hard': 'Difícil',
+    'print': 'Imprimir',
+    'check': 'Verificar',
+    'cw-title': '📝 Crucigrama',
+    'cw-desc': 'Completa el crucigrama usando las pistas horizontales y verticales',
+    'mem-title': '🃏 Juego de Memoria',
+    'mem-desc': 'Encuentra todas las parejas — entrena tu memoria',
+    'mem-moves': 'Intentos',
+    'mem-pairs': 'Parejas encontradas',
+    'home-desc': '13 actividades para estimular tu mente y disfrutar cada momento.<br>Elige tu favorita y comienza cuando quieras.',
+    'nostalgia': 'Nostalgia',
+    'cards': [
+      { icon: '🔤', title: 'Sopa de Letras', desc: 'Encuentra palabras positivas escondidas en la cuadrícula', id: 'ws' },
+      { icon: '🔢', title: 'Sudoku', desc: 'Clásico rompecabezas numérico. Letra grande, fácil de ver', id: 'sudoku' },
+      { icon: '🔀', title: 'Palabras Desordenadas', desc: 'Reordena las letras para descubrir la palabra', id: 'scramble' },
+      { icon: '🔍', title: 'Búsqueda de Números', desc: 'Encuentra las secuencias numéricas en la cuadrícula', id: 'ns' },
+      { icon: '✏️', title: 'Completar Palabras', desc: 'Lee la pista y escribe la palabra que falta', id: 'wf' },
+      { icon: '🧩', title: 'Rellena los Números', desc: 'Completa la secuencia numérica paso a paso', id: 'nf' },
+      { icon: '🌀', title: 'Laberinto', desc: 'Navega por el laberinto y encuentra la salida', id: 'maze' },
+      { icon: '📝', title: 'Crucigrama', desc: 'Completa el crucigrama con palabras positivas', id: 'cw' },
+      { icon: '🃏', title: 'Juego de Memoria', desc: 'Voltea las tarjetas y encuentra las parejas', id: 'mem' },
+      { icon: '🧠', title: 'Trivia', desc: 'Preguntas de cultura general, historia y nostalgia', id: 'trivia' },
+      { icon: '🌬️', title: 'Respiración', desc: 'Ejercicio guiado para calmar la mente y relajarse', id: 'breath' },
+      { icon: '🎨', title: 'Colorear', desc: 'Pinta hermosas escenas — jardín, mariposa, mandala', id: 'color' },
+      { icon: '🧩', title: 'Rompecabezas', desc: 'Arrastra las piezas para completar la imagen', id: 'jigsaw' }
+    ]
+  },
+  en: {
+    'h-title': 'Puzzle Bundle',
+    'h-subtitle': 'Mindful · Positive · Affirmative',
+    'home-title': 'Welcome to your calm moment',
+    'home-desc': '7 types of puzzles to stimulate your mind and enjoy every moment.<br>Choose your favorite activity and start whenever you like.',
+    'back': 'Back',
+    'new': 'New Puzzle',
+    'check': 'Check',
+    'see-sol': 'Show Solution',
+    'sol-title': 'Solution',
+    'ws-title': '🔤 Word Search',
+    'ws-desc': 'Find all the words hidden in the grid',
+    'sudoku-title': '🔢 Sudoku',
+    'sudoku-desc': 'Fill the grid: every row, column and 3×3 box must contain numbers 1–9',
+    'scramble-title': '🔀 Word Scrambles',
+    'scramble-desc': 'Rearrange the letters to form the correct word',
+    'ns-title': '🔍 Number Search',
+    'ns-desc': 'Find the number sequences hidden in the grid',
+    'wf-title': '✏️ Word Fill',
+    'wf-desc': 'Read the clue and write the correct word',
+    'nf-title': '🧩 Number Fill',
+    'nf-desc': 'Complete the number sequence in the grid',
+    'maze-title': '🌀 Maze',
+    'maze-desc': 'Find your way out — click and drag',
+    'maze-hint': 'Click on the entrance (green) and drag to the exit (red)',
+    'maze-win': 'Congratulations! You found the exit! 🎉',
+    'score': 'Found',
+    'of': 'of',
+    'well-done': 'Well done! Puzzle complete 🌿',
+    'lang-btn': '🌐 ES',
+    'diff-label': 'Level:',
+    'easy': 'Easy', 'normal': 'Normal', 'medium': 'Normal', 'hard': 'Hard',
+    'print': 'Print',
+    'check': 'Check',
+    'cw-title': '📝 Crossword',
+    'cw-desc': 'Complete the crossword using the across and down clues',
+    'mem-title': '🃏 Memory Game',
+    'mem-desc': 'Find all the matching pairs — train your memory',
+    'mem-moves': 'Moves',
+    'mem-pairs': 'Pairs found',
+    'home-desc': '13 activities to stimulate your mind and enjoy every moment.<br>Choose your favorite and start whenever you like.',
+    'nostalgia': 'Nostalgia',
+    'cards': [
+      { icon: '🔤', title: 'Word Search', desc: 'Find positive words hidden in the grid', id: 'ws' },
+      { icon: '🔢', title: 'Sudoku', desc: 'Classic number puzzle. Large print, easy to read', id: 'sudoku' },
+      { icon: '🔀', title: 'Word Scrambles', desc: 'Rearrange the letters to discover the word', id: 'scramble' },
+      { icon: '🔍', title: 'Number Search', desc: 'Find the number sequences in the grid', id: 'ns' },
+      { icon: '✏️', title: 'Word Fill', desc: 'Read the clue and write the missing word', id: 'wf' },
+      { icon: '🧩', title: 'Number Fill', desc: 'Complete the number sequence step by step', id: 'nf' },
+      { icon: '🌀', title: 'Maze', desc: 'Navigate the maze and find the exit', id: 'maze' },
+      { icon: '📝', title: 'Crossword', desc: 'Complete the crossword with positive words', id: 'cw' },
+      { icon: '🃏', title: 'Memory Game', desc: 'Flip the cards and find the matching pairs', id: 'mem' },
+      { icon: '🧠', title: 'Trivia', desc: 'General knowledge, history & nostalgia from the 50s–70s', id: 'trivia' },
+      { icon: '🌬️', title: 'Breathing', desc: 'Guided breathing exercise to calm your mind', id: 'breath' },
+      { icon: '🎨', title: 'Coloring Page', desc: 'Paint beautiful scenes — garden, butterfly, mandala', id: 'color' },
+      { icon: '🧩', title: 'Jigsaw Puzzle', desc: 'Drag the pieces to complete the picture', id: 'jigsaw' }
+    ]
+  }
+};
+
+// Extra translation keys
+const extraT = {
+  es: {
+    'trivia-title':'🧠 Trivia','trivia-desc':'Pon a prueba tu cultura general',
+    'breath-title':'🌬️ Respiración','breath-desc':'Ejercicio guiado para calmar la mente',
+    'streak-label':'días seguidos','streak-label-1':'día seguido',
+    'bp-box':'Cuadrada','bp-calm':'Calma',
+    'breath-start':'Comenzar','breath-stop':'Detener',
+    'breath-inhale':'Inhala','breath-hold':'Sostén','breath-exhale':'Exhala',
+    'breath-rest':'Descansa','breath-cycles-label':'ciclos completados',
+    'trivia-correct':'¡Correcto! ✅','trivia-wrong':'Incorrecto ❌',
+    'trivia-done':'¡Quiz terminado!','trivia-your-score':'Tu puntaje',
+    'record-label':'Récord hoy',
+    'color-title':'🎨 Página para Colorear','color-desc':'Toca una región y elige un color para pintarla',
+    'jigsaw-title':'🧩 Rompecabezas','jigsaw-desc':'Arrastra las piezas para completar la imagen',
+    'jigsaw-done':'¡Rompecabezas completo!',
+    'undo':'Deshacer','reset':'Reiniciar','new-scene':'Nueva Escena',
+    'nostalgia':'Nostalgia'
+  },
+  en: {
+    'trivia-title':'🧠 Trivia','trivia-desc':'Test your general knowledge',
+    'breath-title':'🌬️ Breathing','breath-desc':'Guided breathing exercise to calm your mind',
+    'streak-label':'days in a row','streak-label-1':'day in a row',
+    'bp-box':'Box','bp-calm':'Calm',
+    'breath-start':'Start','breath-stop':'Stop',
+    'breath-inhale':'Inhale','breath-hold':'Hold','breath-exhale':'Exhale',
+    'breath-rest':'Rest','breath-cycles-label':'cycles completed',
+    'trivia-correct':'Correct! ✅','trivia-wrong':'Incorrect ❌',
+    'trivia-done':'Quiz complete!','trivia-your-score':'Your score',
+    'record-label':'Today\'s record',
+    'color-title':'🎨 Coloring Page','color-desc':'Tap any region and choose a color to fill it',
+    'jigsaw-title':'🧩 Jigsaw Puzzle','jigsaw-desc':'Drag the pieces to complete the picture',
+    'jigsaw-done':'Puzzle complete!',
+    'undo':'Undo','reset':'Reset','new-scene':'New Scene',
+    'nostalgia':'Nostalgia'
+  }
+};
+function tx(key) { return (extraT[lang]||{})[key] || T[lang][key] || key; }
+
+let lang = 'en';
+
+function t(key) { return T[lang][key] || key; }
+
+function toggleLang() {
+  lang = lang === 'es' ? 'en' : 'es';
+  savePrefs();
+  applyLang();
+  // re-init current puzzle if any
+  const active = document.querySelector('.puzzle-screen.active');
+  if (active) {
+    const id = active.id.replace('screen-', '');
+    const initMap = { ws: initWordSearch, sudoku: initSudoku, scramble: initScramble, ns: initNumberSearch, wf: initWordFill, nf: initNumberFill, maze: initMaze, cw: initCrossword, mem: initMemory, trivia: initTrivia, breath: initBreath, color: initColoring, jigsaw: initJigsaw };
+    if (initMap[id]) initMap[id]();
+  } else {
+    renderHomeCards();
+  }
+}
+
+function applyLang() {
+  document.getElementById('h-title').textContent = t('h-title');
+  document.getElementById('h-subtitle').textContent = t('h-subtitle');
+  document.getElementById('home-title').textContent = t('home-title');
+  document.getElementById('home-desc').innerHTML = t('home-desc');
+  document.getElementById('lang-btn').textContent = lang === 'en' ? '🌐 ES' : '🌐 EN';
+  // puzzle headers — use tx() so extraT keys (trivia, breath) also resolve
+  ['ws','sudoku','scramble','ns','wf','nf','maze','cw','mem','trivia','breath','color','jigsaw'].forEach(id => {
+    const el = document.getElementById(id + '-title');
+    const desc = document.getElementById(id + '-desc');
+    if (el) el.textContent = tx(id + '-title');
+    if (desc) desc.textContent = tx(id + '-desc');
+  });
+  // data-t elements — check both T and extraT
+  document.querySelectorAll('[data-t]').forEach(el => {
+    const key = el.getAttribute('data-t');
+    const val = tx(key);
+    if (val && val !== key) el.textContent = val;
+  });
+  if (document.getElementById('maze-hint'))
+    document.getElementById('maze-hint').textContent = t('maze-hint');
+  // streak label
+  renderStreak();
+  renderStats();
+  renderDailyQuote();
+}
+
+function renderHomeCards() {
+  const grid = document.getElementById('puzzle-grid');
+  if (!grid) return;
+  grid.innerHTML = '';
+  const cards = T[lang] && T[lang]['cards'];
+  if (!cards || !Array.isArray(cards)) return;
+  cards.forEach(card => {
+    const div = document.createElement('div');
+    div.className = 'puzzle-card';
+    div.innerHTML = `<div class="icon">${card.icon}</div><h3>${card.title}</h3><p>${card.desc}</p>`;
+    div.onclick = () => openPuzzle(card.id);
+    grid.appendChild(div);
+  });
+}
+
+function openPuzzle(id) {
+  document.getElementById('home-screen').style.display = 'none';
+  document.querySelectorAll('.puzzle-screen').forEach(s => s.classList.remove('active'));
+  const screen = document.getElementById('screen-' + id);
+  if (screen) screen.classList.add('active');
+  const initMap = { ws: initWordSearch, sudoku: initSudoku, scramble: initScramble, ns: initNumberSearch, wf: initWordFill, nf: initNumberFill, maze: initMaze, cw: initCrossword, mem: initMemory, trivia: initTrivia, breath: initBreath, color: initColoring, jigsaw: initJigsaw };
+  if (initMap[id]) initMap[id]();
+}
+
+function goHome() {
+  document.getElementById('home-screen').style.display = 'block';
+  document.querySelectorAll('.puzzle-screen').forEach(s => s.classList.remove('active'));
+}
+
+function toggleSolution(id) {
+  const box = document.getElementById(id);
+  box.style.display = box.style.display === 'block' ? 'none' : 'block';
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+// ===================== WORD SEARCH =====================
+const wsWordsES = ['PAZ','AMOR','CALMA','FUERZA','ALEGRIA','GRATITUD','ESPERANZA','VIDA','LUZ','BIEN','FE','GOZO','VALOR','SALUD','SONRIE'];
+const wsWordsEN = ['PEACE','LOVE','CALM','HOPE','JOY','GRACE','BRIGHT','TRUST','GLOW','KIND','FAITH','SMILE','LIGHT','GROW','HEAL','PRAYER','MERCY','GLORY','WISDOM','PRAISE','BLESS','SPIRIT','TRUTH','COURAGE'];
+
+let wsGrid = [], wsWords = [], wsFound = [], wsSelecting = false, wsStartCell = null, wsCells = [];
+
+function initWordSearch() {
+  document.getElementById('ws-sol').style.display = 'none';
+  wsWords = (lang === 'es' ? wsWordsES : wsWordsEN).slice();
+  shuffle(wsWords);
+  wsWords = wsWords.slice(0, wsWordCount()); // FIX: now respects difficulty setting
+  wsFound = new Array(wsWords.length).fill(false);
+  const size = 14;
+  wsGrid = Array.from({length: size}, () => Array(size).fill(''));
+  const placed = [];
+  const dirs = [[0,1],[1,0],[1,1],[0,-1],[-1,0],[-1,-1],[1,-1],[-1,1]];
+  for (let w = 0; w < wsWords.length; w++) {
+    const word = wsWords[w];
+    let ok = false;
+    for (let t = 0; t < 200 && !ok; t++) {
+      const dir = dirs[Math.floor(Math.random() * dirs.length)];
+      const r = Math.floor(Math.random() * size);
+      const c = Math.floor(Math.random() * size);
+      let fits = true;
+      for (let i = 0; i < word.length; i++) {
+        const nr = r + dir[0]*i, nc = c + dir[1]*i;
+        if (nr<0||nr>=size||nc<0||nc>=size) { fits=false; break; }
+        if (wsGrid[nr][nc] !== '' && wsGrid[nr][nc] !== word[i]) { fits=false; break; }
+      }
+      if (fits) {
+        const cells = [];
+        for (let i = 0; i < word.length; i++) {
+          wsGrid[r+dir[0]*i][c+dir[1]*i] = word[i];
+          cells.push([r+dir[0]*i, c+dir[1]*i]);
+        }
+        placed.push({word, cells});
+        ok = true;
+      }
+    }
+  }
+  const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  for (let r = 0; r < size; r++)
+    for (let c = 0; c < size; c++)
+      if (!wsGrid[r][c]) wsGrid[r][c] = letters[Math.floor(Math.random()*26)];
+
+  // Render
+  const gridEl = document.getElementById('ws-grid');
+  gridEl.innerHTML = '';
+  wsCells = [];
+  for (let r = 0; r < size; r++) {
+    const row = document.createElement('div');
+    row.className = 'ws-row';
+    const rowCells = [];
+    for (let c = 0; c < size; c++) {
+      const cell = document.createElement('div');
+      cell.className = 'ws-cell';
+      cell.textContent = wsGrid[r][c];
+      cell.dataset.r = r; cell.dataset.c = c;
+      cell.addEventListener('mousedown', wsMouseDown);
+      cell.addEventListener('mouseover', wsMouseOver);
+      cell.addEventListener('mouseup', wsMouseUp);
+      cell.addEventListener('touchstart', wsTouchStart, {passive:false});
+      cell.addEventListener('touchmove', wsTouchMove, {passive:false});
+      cell.addEventListener('touchend', wsTouchEnd);
+      row.appendChild(cell);
+      rowCells.push(cell);
+    }
+    gridEl.appendChild(row);
+    wsCells.push(rowCells);
+  }
+
+  // Word list
+  const listEl = document.getElementById('ws-word-list');
+  listEl.innerHTML = '';
+  wsWords.forEach((w,i) => {
+    const span = document.createElement('span');
+    span.className = 'ws-word';
+    span.textContent = w;
+    span.id = 'wsw-' + i;
+    listEl.appendChild(span);
+  });
+  document.getElementById('ws-score').innerHTML = '';
+
+  // Solution content
+  let solHtml = '';
+  placed.forEach(p => {
+    solHtml += `<strong>${p.word}</strong>: fila ${p.cells[0][0]+1}, col ${p.cells[0][1]+1}<br>`;
+  });
+  document.getElementById('ws-sol-content').innerHTML = solHtml || '<em>—</em>';
+  wsFoundPlaced = placed;
+}
+
+let wsFoundPlaced = [];
+let wsCurrentSel = [];
+
+function getCellAt(r,c) { return wsCells[r] && wsCells[r][c] ? wsCells[r][c] : null; }
+
+function wsMouseDown(e) {
+  wsSelecting = true;
+  wsStartCell = e.target;
+  wsCurrentSel = [e.target];
+  e.target.classList.add('selected');
+}
+function wsMouseOver(e) {
+  if (!wsSelecting) return;
+  const start = wsStartCell;
+  const r1 = +start.dataset.r, c1 = +start.dataset.c;
+  const r2 = +e.target.dataset.r, c2 = +e.target.dataset.c;
+  const line = getCellsInLine(r1,c1,r2,c2);
+  wsCurrentSel.forEach(c => { if (!c.classList.contains('found')) c.classList.remove('selected'); });
+  wsCurrentSel = line;
+  line.forEach(c => { if (!c.classList.contains('found')) c.classList.add('selected'); });
+}
+function wsMouseUp() {
+  if (!wsSelecting) return;
+  wsSelecting = false;
+  checkWSSelection();
+}
+function wsTouchStart(e) {
+  e.preventDefault();
+  const touch = e.touches[0];
+  const el = document.elementFromPoint(touch.clientX, touch.clientY);
+  if (el && el.classList.contains('ws-cell')) {
+    wsSelecting = true;
+    wsStartCell = el;
+    wsCurrentSel = [el];
+    el.classList.add('selected');
+  }
+}
+function wsTouchMove(e) {
+  e.preventDefault();
+  const touch = e.touches[0];
+  const el = document.elementFromPoint(touch.clientX, touch.clientY);
+  if (el && el.classList.contains('ws-cell')) {
+    const start = wsStartCell;
+    const r1 = +start.dataset.r, c1 = +start.dataset.c;
+    const r2 = +el.dataset.r, c2 = +el.dataset.c;
+    const line = getCellsInLine(r1,c1,r2,c2);
+    wsCurrentSel.forEach(c => { if (!c.classList.contains('found')) c.classList.remove('selected'); });
+    wsCurrentSel = line;
+    line.forEach(c => { if (!c.classList.contains('found')) c.classList.add('selected'); });
+  }
+}
+function wsTouchEnd() { wsSelecting = false; checkWSSelection(); }
+
+function getCellsInLine(r1,c1,r2,c2) {
+  const dr = r2-r1, dc = c2-c1;
+  const len = Math.max(Math.abs(dr),Math.abs(dc));
+  if (len === 0) return [getCellAt(r1,c1)].filter(Boolean);
+  if (!(dr===0||dc===0||Math.abs(dr)===Math.abs(dc))) return [getCellAt(r1,c1)].filter(Boolean);
+  const sr = dr===0?0:(dr>0?1:-1), sc = dc===0?0:(dc>0?1:-1);
+  const cells = [];
+  for (let i=0; i<=len; i++) {
+    const c = getCellAt(r1+sr*i, c1+sc*i);
+    if (c) cells.push(c);
+  }
+  return cells;
+}
+
+function checkWSSelection() {
+  const word = wsCurrentSel.map(c => c.textContent).join('');
+  const rev = word.split('').reverse().join('');
+  const idx = wsWords.findIndex((w,i) => !wsFound[i] && (w===word||w===rev));
+  if (idx >= 0) {
+    wsFound[idx] = true;
+    wsCurrentSel.forEach(c => { c.classList.remove('selected'); c.classList.add('found'); });
+    document.getElementById('wsw-' + idx).classList.add('found');
+    const foundCount = wsFound.filter(Boolean).length;
+    document.getElementById('ws-score').innerHTML = `<span class="score-badge">${t('score')}: ${foundCount} ${t('of')} ${wsWords.length}</span>`;
+    if (foundCount === wsWords.length) { saveRecord('ws', foundCount, wsWords.length); showToast(t('well-done')); }
+  } else {
+    wsCurrentSel.forEach(c => { if (!c.classList.contains('found')) c.classList.remove('selected'); });
+  }
+  wsCurrentSel = [];
+}
+
+document.addEventListener('mouseup', () => { if (wsSelecting) { wsSelecting=false; checkWSSelection(); } });
+
+// ===================== SUDOKU =====================
+let sudokuPuzzle = [], sudokuSolution = [], sudokuSelected = -1;
+
+const sudokuPuzzles = [
+  // puzzle, solution pairs (0 = empty)
+  {
+    p: [5,3,0,0,7,0,0,0,0, 6,0,0,1,9,5,0,0,0, 0,9,8,0,0,0,0,6,0,
+        8,0,0,0,6,0,0,0,3, 4,0,0,8,0,3,0,0,1, 7,0,0,0,2,0,0,0,6,
+        0,6,0,0,0,0,2,8,0, 0,0,0,4,1,9,0,0,5, 0,0,0,0,8,0,0,7,9],
+    s: [5,3,4,6,7,8,9,1,2, 6,7,2,1,9,5,3,4,8, 1,9,8,3,4,2,5,6,7,
+        8,5,9,7,6,1,4,2,3, 4,2,6,8,5,3,7,9,1, 7,1,3,9,2,4,8,5,6,
+        9,6,1,5,3,7,2,8,4, 2,8,7,4,1,9,6,3,5, 3,4,5,2,8,6,1,7,9]
+  },
+  {
+    p: [0,0,0,2,6,0,7,0,1, 6,8,0,0,7,0,0,9,0, 1,9,0,0,0,4,5,0,0,
+        8,2,0,1,0,0,0,4,0, 0,0,4,6,0,2,9,0,0, 0,5,0,0,0,3,0,2,8,
+        0,0,9,3,0,0,0,7,4, 0,4,0,0,5,0,0,3,6, 7,0,3,0,1,8,0,0,0],
+    s: [4,3,5,2,6,9,7,8,1, 6,8,2,5,7,1,4,9,3, 1,9,7,8,3,4,5,6,2,
+        8,2,6,1,9,5,3,4,7, 3,7,4,6,8,2,9,1,5, 9,5,1,7,4,3,6,2,8,
+        5,1,9,3,2,6,8,7,4, 2,4,8,9,5,7,1,3,6, 7,6,3,4,1,8,2,5,9]
+  }
+];
+
+function sudokuSaveState() {
+  const cells = document.querySelectorAll('.sudoku-cell');
+  const userInput = Array.from(cells).map(c => c.classList.contains('user-input') ? (parseInt(c.textContent) || 0) : 0);
+  lsSave('sudoku', { puzzle: sudokuPuzzle, solution: sudokuSolution, userInput });
+}
+
+function restoreSudoku(saved) {
+  document.getElementById('sudoku-sol').style.display = 'none';
+  sudokuPuzzle = saved.puzzle;
+  sudokuSolution = saved.solution;
+  sudokuSelected = -1;
+  const gridEl = document.getElementById('sudoku-grid');
+  gridEl.innerHTML = ''; gridEl.style.cssText = '';
+  for (let i = 0; i < 81; i++) {
+    const cell = document.createElement('div');
+    cell.className = 'sudoku-cell';
+    const r = Math.floor(i/9), c = i%9;
+    if ((c+1)%3===0 && c!==8) cell.classList.add('box-right');
+    if ((r+1)%3===0 && r!==8) cell.classList.add('box-bottom');
+    if (sudokuPuzzle[i] !== 0) {
+      cell.textContent = sudokuPuzzle[i]; cell.classList.add('given');
+    } else if (saved.userInput[i]) {
+      cell.textContent = saved.userInput[i]; cell.classList.add('user-input');
+      if (saved.userInput[i] !== sudokuSolution[i]) cell.classList.add('error');
+    }
+    cell.dataset.idx = i;
+    cell.addEventListener('click', () => {
+      if (sudokuPuzzle[i] !== 0) return;
+      document.querySelectorAll('.sudoku-cell').forEach(c => c.classList.remove('selected'));
+      cell.classList.add('selected'); sudokuSelected = i;
+    });
+    gridEl.appendChild(cell);
+  }
+  buildSudokuNumpad();
+  let solHtml = '<div style="font-family:monospace; font-size:0.9rem; line-height:1.8;">';
+  for (let r=0;r<9;r++) { for (let c=0;c<9;c++) solHtml += sudokuSolution[r*9+c] + ' '; solHtml += '<br>'; }
+  solHtml += '</div>';
+  document.getElementById('sudoku-sol-content').innerHTML = solHtml;
+}
+
+function buildSudokuNumpad() {
+  const numpad = document.getElementById('sudoku-numpad');
+  numpad.innerHTML = '';
+  for (let n = 1; n <= 9; n++) {
+    const btn = document.createElement('button');
+    btn.className = 'num-btn'; btn.textContent = n;
+    btn.addEventListener('click', () => sudokuEnter(n));
+    numpad.appendChild(btn);
+  }
+  const erase = document.createElement('button');
+  erase.className = 'num-btn erase'; erase.textContent = '✕';
+  erase.addEventListener('click', () => sudokuEnter(0));
+  numpad.appendChild(erase);
+}
+
+function initSudoku(forceNew) {
+  if (!forceNew) {
+    const saved = lsLoad('sudoku', null);
+    if (saved && saved.userInput && saved.userInput.some(v => v > 0)) {
+      const msg = lang === 'es' ? '¿Continuar el sudoku anterior?' : 'Continue where you left off?';
+      if (confirm(msg)) { restoreSudoku(saved); return; }
+    }
+  }
+  lsClear('sudoku');
+  document.getElementById('sudoku-sol').style.display = 'none';
+  sudokuSelected = -1;
+  const p = sudokuPuzzles[Math.floor(Math.random() * sudokuPuzzles.length)];
+  sudokuPuzzle = [...p.p];
+  sudokuSolution = [...p.s];
+  const userGrid = [...sudokuPuzzle];
+
+  const gridEl = document.getElementById('sudoku-grid');
+  gridEl.innerHTML = '';
+  gridEl.style.cssText = '';
+
+  for (let i = 0; i < 81; i++) {
+    const cell = document.createElement('div');
+    cell.className = 'sudoku-cell';
+    const r = Math.floor(i/9), c = i%9;
+    if ((c+1)%3===0 && c!==8) cell.classList.add('box-right');
+    if ((r+1)%3===0 && r!==8) cell.classList.add('box-bottom');
+    if (sudokuPuzzle[i] !== 0) {
+      cell.textContent = sudokuPuzzle[i];
+      cell.classList.add('given');
+    }
+    cell.dataset.idx = i;
+    cell.addEventListener('click', () => {
+      if (sudokuPuzzle[i] !== 0) return;
+      document.querySelectorAll('.sudoku-cell').forEach(c => c.classList.remove('selected'));
+      cell.classList.add('selected');
+      sudokuSelected = i;
+    });
+    gridEl.appendChild(cell);
+  }
+
+  buildSudokuNumpad();
+
+  // Solution
+  let solHtml = '<div style="font-family:monospace; font-size:0.9rem; line-height:1.8;">';
+  for (let r=0;r<9;r++) {
+    for (let c=0;c<9;c++) solHtml += sudokuSolution[r*9+c] + ' ';
+    solHtml += '<br>';
+  }
+  solHtml += '</div>';
+  document.getElementById('sudoku-sol-content').innerHTML = solHtml;
+}
+
+function sudokuEnter(n) {
+  if (sudokuSelected < 0) return;
+  const cells = document.querySelectorAll('.sudoku-cell');
+  const cell = cells[sudokuSelected];
+  if (!cell || cell.classList.contains('given')) return;
+  if (n === 0) { cell.textContent = ''; cell.classList.remove('user-input','error'); sudokuSaveState(); return; }
+  cell.textContent = n;
+  cell.classList.add('user-input');
+  if (n === sudokuSolution[sudokuSelected]) {
+    cell.classList.remove('error');
+    // check win
+    let win = true;
+    cells.forEach((c,i) => { if (!c.classList.contains('given') && parseInt(c.textContent) !== sudokuSolution[i]) win=false; });
+    if (win) {
+      lsClear('sudoku');
+      saveRecord('sudoku', 81, 81);
+      showToast(t('well-done'));
+      return;
+    }
+  } else {
+    cell.classList.add('error');
+  }
+  sudokuSaveState();
+}
+
+// ===================== WORD SCRAMBLE =====================
+const scrambleDataES = [
+  { word:'CALMA', scramble:'LAMCA' }, { word:'ALEGRE', scramble:'RELAGE' },
+  { word:'AMOR', scramble:'ROMA' }, { word:'LUZ', scramble:'ZUL' },
+  { word:'PAZ', scramble:'ZAP' }, { word:'FUERZA', scramble:'ZURAFE' },
+  { word:'GOZO', scramble:'ZOGO' }, { word:'VIDA', scramble:'DAVI' },
+  { word:'FE', scramble:'EF' }, { word:'VALOR', scramble:'ROLVA' },
+  { word:'ESPERANZA', scramble:'NAPERASZ' }, { word:'SONRISA', scramble:'ROSANIS' },
+  { word:'GRATITUD', scramble:'TUTIGRAD' }, { word:'CRECER', scramble:'RECRCE' },
+  { word:'FORTALEZA', scramble:'ZALATEFOR' }, { word:'BONDAD', scramble:'DADBON' }
+];
+const scrambleDataEN = [
+  { word:'CALM', scramble:'LCAM' }, { word:'HAPPY', scramble:'PAHYP' },
+  { word:'LOVE', scramble:'VELO' }, { word:'LIGHT', scramble:'TILGH' },
+  { word:'PEACE', scramble:'CAPEE' }, { word:'FAITH', scramble:'HIAFT' },
+  { word:'GRACE', scramble:'RCAEG' }, { word:'TRUST', scramble:'TSRUT' },
+  { word:'SMILE', scramble:'ILESM' }, { word:'HOPE', scramble:'POHE' },
+  { word:'BRIGHT', scramble:'THGIRB' }, { word:'GENTLE', scramble:'ELTNEG' },
+  { word:'COURAGE', scramble:'AGRUOCE' }, { word:'CREATE', scramble:'AERECT' },
+  { word:'FREEDOM', scramble:'MOFDERE' }, { word:'ENERGY', scramble:'GYNERE' }
+];
+
+let scrambleData = [];
+
+function initScramble() {
+  document.getElementById('scramble-sol').style.display = 'none';
+  const src = lang === 'es' ? scrambleDataES : scrambleDataEN;
+  scrambleData = shuffle([...src]).slice(0, 12);
+  const listEl = document.getElementById('scramble-list');
+  listEl.innerHTML = '';
+  scrambleData.forEach((item, i) => {
+    const div = document.createElement('div');
+    div.className = 'scramble-item';
+    div.innerHTML = `
+      <span class="scramble-num">${i+1}.</span>
+      <span class="scramble-word">${item.scramble}</span>
+      <input class="scramble-input" type="text" maxlength="${item.word.length+2}" data-idx="${i}" placeholder="${'_'.repeat(item.word.length)}" autocomplete="off" autocorrect="off" spellcheck="false">
+      <span class="check-icon" id="sc-icon-${i}"></span>`;
+    listEl.appendChild(div);
+    const inp = div.querySelector('input');
+    inp.addEventListener('input', () => {
+      inp.value = inp.value.toUpperCase().replace(/[^A-ZÁÉÍÓÚÑ]/g,'');
+      if (inp.value.length === item.word.length) checkScrambleItem(i, inp);
+    });
+  });
+  document.getElementById('scramble-score').innerHTML = '';
+  // Solution
+  let sol = scrambleData.map((d,i) => `${i+1}. ${d.scramble} → <strong>${d.word}</strong>`).join('<br>');
+  document.getElementById('scramble-sol-content').innerHTML = sol;
+}
+
+function checkScrambleItem(i, inp) {
+  const correct = inp.value.toUpperCase() === scrambleData[i].word;
+  inp.classList.toggle('correct', correct);
+  inp.classList.toggle('wrong', !correct);
+  document.getElementById('sc-icon-'+i).textContent = correct ? '✅' : '❌';
+}
+
+function checkAllScramble() {
+  let score = 0;
+  scrambleData.forEach((item, i) => {
+    const inp = document.querySelector(`.scramble-input[data-idx="${i}"]`);
+    if (!inp) return;
+    const correct = inp.value.toUpperCase() === item.word;
+    inp.classList.toggle('correct', correct);
+    inp.classList.toggle('wrong', !correct);
+    document.getElementById('sc-icon-'+i).textContent = correct ? '✅' : '❌';
+    if (correct) score++;
+  });
+  const scoreEl = document.getElementById('scramble-score');
+  scoreEl.innerHTML = `<span class="score-badge">${t('score')}: ${score} ${t('of')} ${scrambleData.length}</span>`;
+  if (score === scrambleData.length) showToast(t('well-done'));
+}
+
+// ===================== NUMBER SEARCH =====================
+let nsGrid = [], nsNumbers = [], nsFound = [], nsCells = [];
+let nsSelecting = false, nsStartCell = null, nsCurrentSel = [];
+
+function initNumberSearch() {
+  document.getElementById('ns-sol').style.display = 'none';
+  const size = 14;
+  const numCount = 10;
+  nsNumbers = [];
+  for (let i = 0; i < numCount; i++) {
+    const len = 4 + Math.floor(Math.random() * 3);
+    let num = '';
+    for (let j = 0; j < len; j++) num += Math.floor(Math.random() * 10);
+    nsNumbers.push(num);
+  }
+  nsFound = new Array(numCount).fill(false);
+  nsGrid = Array.from({length: size}, () => Array(size).fill(''));
+  const placed = [];
+  const dirs = [[0,1],[1,0],[0,-1],[-1,0]];
+  for (let w = 0; w < nsNumbers.length; w++) {
+    const num = nsNumbers[w];
+    let ok = false;
+    for (let t = 0; t < 200 && !ok; t++) {
+      const dir = dirs[Math.floor(Math.random() * dirs.length)];
+      const r = Math.floor(Math.random() * size);
+      const c = Math.floor(Math.random() * size);
+      let fits = true;
+      for (let i = 0; i < num.length; i++) {
+        const nr = r+dir[0]*i, nc = c+dir[1]*i;
+        if (nr<0||nr>=size||nc<0||nc>=size) { fits=false; break; }
+        if (nsGrid[nr][nc] !== '' && nsGrid[nr][nc] !== num[i]) { fits=false; break; }
+      }
+      if (fits) {
+        const cells = [];
+        for (let i = 0; i < num.length; i++) {
+          nsGrid[r+dir[0]*i][c+dir[1]*i] = num[i];
+          cells.push([r+dir[0]*i, c+dir[1]*i]);
+        }
+        placed.push({num, cells});
+        ok = true;
+      }
+    }
+  }
+  for (let r=0;r<size;r++)
+    for (let c=0;c<size;c++)
+      if (!nsGrid[r][c]) nsGrid[r][c] = Math.floor(Math.random()*10)+'';
+
+  // Render
+  const gridEl = document.getElementById('ns-grid');
+  gridEl.innerHTML = '';
+  nsCells = [];
+  for (let r=0;r<size;r++) {
+    const row = document.createElement('div');
+    row.style.display = 'flex';
+    const rowCells = [];
+    for (let c=0;c<size;c++) {
+      const cell = document.createElement('span');
+      cell.className = 'ns-cell';
+      cell.textContent = nsGrid[r][c];
+      cell.dataset.r = r; cell.dataset.c = c;
+      cell.addEventListener('mousedown', nsMouseDown);
+      cell.addEventListener('mouseover', nsMouseOver);
+      cell.addEventListener('mouseup', nsMouseUp);
+      cell.addEventListener('touchstart', nsTouchStart, {passive:false});
+      cell.addEventListener('touchmove', nsTouchMove, {passive:false});
+      cell.addEventListener('touchend', nsTouchEnd);
+      row.appendChild(cell);
+      rowCells.push(cell);
+    }
+    gridEl.appendChild(row);
+    nsCells.push(rowCells);
+  }
+
+  // List
+  const listEl = document.getElementById('ns-number-list');
+  listEl.innerHTML = '';
+  nsNumbers.forEach((n,i) => {
+    const span = document.createElement('span');
+    span.className = 'ns-number';
+    span.textContent = n;
+    span.id = 'nsn-'+i;
+    listEl.appendChild(span);
+  });
+  document.getElementById('ns-score').innerHTML = '';
+
+  let solHtml = '';
+  placed.forEach(p => { solHtml += `<strong>${p.num}</strong>: fila ${p.cells[0][0]+1}, col ${p.cells[0][1]+1}<br>`; });
+  document.getElementById('ns-sol-content').innerHTML = solHtml;
+  nsFoundPlaced = placed;
+}
+let nsFoundPlaced = [];
+
+function getNsCell(r,c) { return nsCells[r]&&nsCells[r][c]?nsCells[r][c]:null; }
+function getNsCellsInLine(r1,c1,r2,c2) {
+  const dr=r2-r1,dc=c2-c1;
+  const len=Math.max(Math.abs(dr),Math.abs(dc));
+  if(len===0) return [getNsCell(r1,c1)].filter(Boolean);
+  if(!(dr===0||dc===0)) return [getNsCell(r1,c1)].filter(Boolean);
+  const sr=dr===0?0:(dr>0?1:-1),sc=dc===0?0:(dc>0?1:-1);
+  const cells=[];
+  for(let i=0;i<=len;i++){const c=getNsCell(r1+sr*i,c1+sc*i);if(c)cells.push(c);}
+  return cells;
+}
+function nsMouseDown(e){ nsSelecting=true;nsStartCell=e.target;nsCurrentSel=[e.target];e.target.classList.add('selected'); }
+function nsMouseOver(e){ if(!nsSelecting)return;const r1=+nsStartCell.dataset.r,c1=+nsStartCell.dataset.c,r2=+e.target.dataset.r,c2=+e.target.dataset.c;const line=getNsCellsInLine(r1,c1,r2,c2);nsCurrentSel.forEach(c=>{if(!c.classList.contains('found'))c.classList.remove('selected');});nsCurrentSel=line;line.forEach(c=>{if(!c.classList.contains('found'))c.classList.add('selected');}); }
+function nsMouseUp(){ if(!nsSelecting)return;nsSelecting=false;checkNSSelection(); }
+function nsTouchStart(e){e.preventDefault();const t=e.touches[0];const el=document.elementFromPoint(t.clientX,t.clientY);if(el&&el.classList.contains('ns-cell')){nsSelecting=true;nsStartCell=el;nsCurrentSel=[el];el.classList.add('selected');}}
+function nsTouchMove(e){e.preventDefault();const t=e.touches[0];const el=document.elementFromPoint(t.clientX,t.clientY);if(el&&el.classList.contains('ns-cell')){const r1=+nsStartCell.dataset.r,c1=+nsStartCell.dataset.c,r2=+el.dataset.r,c2=+el.dataset.c;const line=getNsCellsInLine(r1,c1,r2,c2);nsCurrentSel.forEach(c=>{if(!c.classList.contains('found'))c.classList.remove('selected');});nsCurrentSel=line;line.forEach(c=>{if(!c.classList.contains('found'))c.classList.add('selected');});}}
+function nsTouchEnd(){nsSelecting=false;checkNSSelection();}
+
+function checkNSSelection() {
+  const num = nsCurrentSel.map(c => c.textContent).join('');
+  const rev = num.split('').reverse().join('');
+  const idx = nsNumbers.findIndex((n,i) => !nsFound[i] && (n===num||n===rev));
+  if (idx >= 0) {
+    nsFound[idx] = true;
+    nsCurrentSel.forEach(c => { c.classList.remove('selected'); c.classList.add('found'); });
+    document.getElementById('nsn-'+idx).classList.add('found');
+    const fc = nsFound.filter(Boolean).length;
+    document.getElementById('ns-score').innerHTML = `<span class="score-badge">${t('score')}: ${fc} ${t('of')} ${nsNumbers.length}</span>`;
+    if (fc === nsNumbers.length) { saveRecord('ns', fc, nsNumbers.length); showToast(t('well-done')); }
+  } else {
+    nsCurrentSel.forEach(c => { if(!c.classList.contains('found')) c.classList.remove('selected'); });
+  }
+  nsCurrentSel = [];
+}
+document.addEventListener('mouseup', () => { if(nsSelecting){nsSelecting=false;checkNSSelection();} });
+
+// ===================== WORD FILL =====================
+const wfDataES = [
+  { clue: 'Sentimiento de tranquilidad interior', answer: 'PAZ' },
+  { clue: 'Estado de bienestar y felicidad', answer: 'ALEGRIA' },
+  { clue: 'Afecto profundo hacia alguien', answer: 'AMOR' },
+  { clue: 'Capacidad de afrontar dificultades', answer: 'VALOR' },
+  { clue: 'Deseo de que algo bueno ocurra', answer: 'ESPERANZA' },
+  { clue: 'Reconocimiento por algo recibido', answer: 'GRATITUD' },
+  { clue: 'Energía y vitalidad del cuerpo', answer: 'SALUD' },
+  { clue: 'Claridad que ilumina la oscuridad', answer: 'LUZ' },
+  { clue: 'Confianza en algo superior', answer: 'FE' },
+  { clue: 'Capacidad de recuperarse', answer: 'RESILIENCIA' },
+  { clue: 'Buen estado físico y mental', answer: 'BIENESTAR' },
+  { clue: 'Acto de perdonar a otros', answer: 'PERDON' }
+];
+const wfDataEN = [
+  { clue: 'A feeling of inner tranquility', answer: 'PEACE' },
+  { clue: 'Deep affection for someone', answer: 'LOVE' },
+  { clue: 'State of happiness and wellness', answer: 'JOY' },
+  { clue: 'Confidence in the future', answer: 'HOPE' },
+  { clue: 'Recognition for what you have received', answer: 'GRATITUDE' },
+  { clue: 'Clarity that lights the darkness', answer: 'LIGHT' },
+  { clue: 'Trust in something greater', answer: 'FAITH' },
+  { clue: 'Physical and mental wellbeing', answer: 'HEALTH' },
+  { clue: 'Ability to face difficulties', answer: 'COURAGE' },
+  { clue: 'Act of letting go of resentment', answer: 'FORGIVENESS' },
+  { clue: 'Expression of happiness on the face', answer: 'SMILE' },
+  { clue: 'Gentle and kind in nature', answer: 'GRACE' }
+];
+
+let wfData = [];
+
+function initWordFill() {
+  document.getElementById('wf-sol').style.display = 'none';
+  const src = lang === 'es' ? wfDataES : wfDataEN;
+  wfData = shuffle([...src]).slice(0, 10);
+  const cluesEl = document.getElementById('wf-clues');
+  cluesEl.innerHTML = '';
+  wfData.forEach((item, i) => {
+    const div = document.createElement('div');
+    div.className = 'wf-clue';
+    div.innerHTML = `
+      <span class="wf-clue-num">${i+1}.</span>
+      <span class="wf-clue-text">${item.clue}</span>
+      <input class="wf-input" type="text" maxlength="${item.answer.length+2}" data-idx="${i}" placeholder="${'_'.repeat(item.answer.length)}" autocomplete="off" autocorrect="off" spellcheck="false">
+      <span class="check-icon" id="wf-icon-${i}"></span>`;
+    cluesEl.appendChild(div);
+    const inp = div.querySelector('input');
+    inp.addEventListener('input', () => {
+      inp.value = inp.value.toUpperCase().replace(/[^A-ZÁÉÍÓÚÑ]/g,'');
+    });
+  });
+  document.getElementById('wf-score').innerHTML = '';
+  let sol = wfData.map((d,i) => `${i+1}. ${d.clue} → <strong>${d.answer}</strong>`).join('<br>');
+  document.getElementById('wf-sol-content').innerHTML = sol;
+}
+
+function checkAllWordFill() {
+  let score = 0;
+  wfData.forEach((item, i) => {
+    const inp = document.querySelector(`.wf-input[data-idx="${i}"]`);
+    if (!inp) return;
+    const correct = inp.value.toUpperCase() === item.answer;
+    inp.classList.toggle('correct', correct);
+    inp.classList.toggle('wrong', !correct);
+    document.getElementById('wf-icon-'+i).textContent = correct ? '✅' : '❌';
+    if (correct) score++;
+  });
+  document.getElementById('wf-score').innerHTML = `<span class="score-badge">${t('score')}: ${score} ${t('of')} ${wfData.length}</span>`;
+  if (score === wfData.length) showToast(t('well-done'));
+}
+
+// ===================== NUMBER FILL =====================
+let nfPuzzle = [], nfSolution = [], nfSelected = -1;
+const NF_SIZE = 6;
+
+function initNumberFill() {
+  document.getElementById('nf-sol').style.display = 'none';
+  nfSelected = -1;
+  // Generate a simple number fill: fill 6x6 grid with 1-6 latin square style
+  nfSolution = [];
+  const base = [1,2,3,4,5,6];
+  for (let r = 0; r < NF_SIZE; r++) {
+    const row = [...base];
+    // shift
+    for (let s = 0; s < r; s++) row.push(row.shift());
+    nfSolution.push(...row);
+  }
+  // Create puzzle: remove ~40% of cells
+  nfPuzzle = nfSolution.map(v => Math.random() < 0.42 ? 0 : v);
+
+  const gridEl = document.getElementById('nf-grid');
+  gridEl.style.cssText = `grid-template-columns: repeat(${NF_SIZE}, 1fr); max-width: ${NF_SIZE * 52}px; margin: 0 auto 16px;`;
+  gridEl.innerHTML = '';
+  for (let i = 0; i < NF_SIZE * NF_SIZE; i++) {
+    const cell = document.createElement('div');
+    cell.className = 'nf-cell';
+    cell.style.cssText = `width:${Math.min(52, Math.floor(300/NF_SIZE))}px;height:${Math.min(52, Math.floor(300/NF_SIZE))}px;font-size:1.1rem;`;
+    if (nfPuzzle[i] !== 0) {
+      cell.textContent = nfPuzzle[i];
+      cell.classList.add('given');
+    }
+    cell.dataset.idx = i;
+    cell.addEventListener('click', () => {
+      if (nfPuzzle[i] !== 0) return;
+      document.querySelectorAll('.nf-cell').forEach(c => c.classList.remove('selected'));
+      cell.classList.add('selected');
+      nfSelected = i;
+    });
+    gridEl.appendChild(cell);
+  }
+
+  // Numpad
+  const numpad = document.getElementById('nf-numpad');
+  numpad.innerHTML = '';
+  for (let n = 1; n <= NF_SIZE; n++) {
+    const btn = document.createElement('button');
+    btn.className = 'num-btn';
+    btn.textContent = n;
+    btn.addEventListener('click', () => nfEnter(n));
+    numpad.appendChild(btn);
+  }
+  const erase = document.createElement('button');
+  erase.className = 'num-btn erase'; erase.textContent = '✕';
+  erase.addEventListener('click', () => nfEnter(0));
+  numpad.appendChild(erase);
+
+  // Solution
+  let solHtml = '<div style="font-family:monospace; font-size:1rem; line-height:2;">';
+  for (let r=0;r<NF_SIZE;r++) {
+    for (let c=0;c<NF_SIZE;c++) solHtml += nfSolution[r*NF_SIZE+c] + ' ';
+    solHtml += '<br>';
+  }
+  solHtml += '</div>';
+  document.getElementById('nf-sol-content').innerHTML = solHtml;
+}
+
+function nfEnter(n) {
+  if (nfSelected < 0) return;
+  const cells = document.querySelectorAll('.nf-cell');
+  const cell = cells[nfSelected];
+  if (!cell || cell.classList.contains('given')) return;
+  if (n === 0) { cell.textContent = ''; cell.classList.remove('user-input','error'); return; }
+  cell.textContent = n;
+  cell.classList.add('user-input');
+  if (n === nfSolution[nfSelected]) {
+    cell.classList.remove('error');
+    let win = true;
+    cells.forEach((c,i) => { if (!c.classList.contains('given') && parseInt(c.textContent) !== nfSolution[i]) win=false; });
+    if (win) { saveRecord('nf', 1, 1); showToast(t('well-done')); }
+  } else { cell.classList.add('error'); }
+}
+
+// ===================== MAZES =====================
+let mazeData = [], mazeRows = 15, mazeCols = 15, mazeCellSize = 30;
+let playerPos = {r:0,c:0}, mazeDrawing = false, mazeSolved = false;
+let mazeCanvas, mazeCtx, mazePath = [];
+
+function initMaze() {
+  mazeCanvas = document.getElementById('maze-canvas');
+  mazeCtx = mazeCanvas.getContext('2d');
+  document.getElementById('maze-message').textContent = '';
+  document.getElementById('maze-hint').textContent = t('maze-hint');
+
+  const W = Math.min(500, window.innerWidth - 60);
+  mazeRows = 15; mazeCols = 15;
+  mazeCellSize = Math.floor(W / mazeCols);
+  mazeCanvas.width = mazeCols * mazeCellSize;
+  mazeCanvas.height = mazeRows * mazeCellSize;
+
+  mazeSolved = false;
+  mazePath = [];
+  playerPos = {r:0, c:0};
+
+  // Generate maze using recursive backtracker
+  mazeData = [];
+  for (let r=0;r<mazeRows;r++) {
+    mazeData.push([]);
+    for (let c=0;c<mazeCols;c++) {
+      mazeData[r].push({visited:false, walls:{N:true,S:true,E:true,W:true}});
+    }
+  }
+  mazeDFS(0,0);
+  drawMaze();
+  drawPlayer();
+
+  mazeCanvas.addEventListener('mousedown', mazeStartDraw);
+  mazeCanvas.addEventListener('mousemove', mazeMoveDraw);
+  mazeCanvas.addEventListener('mouseup', mazeEndDraw);
+  mazeCanvas.addEventListener('touchstart', mazeTouchStart, {passive:false});
+  mazeCanvas.addEventListener('touchmove', mazeTouchMove, {passive:false});
+  mazeCanvas.addEventListener('touchend', mazeEndDraw);
+}
+
+function mazeDFS(r, c) {
+  mazeData[r][c].visited = true;
+  const dirs = shuffle([['N',-1,0],['S',1,0],['E',0,1],['W',0,-1]]);
+  for (const [d, dr, dc] of dirs) {
+    const nr=r+dr, nc=c+dc;
+    if (nr>=0&&nr<mazeRows&&nc>=0&&nc<mazeCols&&!mazeData[nr][nc].visited) {
+      mazeData[r][c].walls[d] = false;
+      const opp = {N:'S',S:'N',E:'W',W:'E'};
+      mazeData[nr][nc].walls[opp[d]] = false;
+      mazeDFS(nr, nc);
+    }
+  }
+}
+
+function drawMaze(showSolution=false) {
+  const ctx = mazeCtx;
+  const cs = mazeCellSize;
+  ctx.clearRect(0,0,mazeCanvas.width,mazeCanvas.height);
+  ctx.fillStyle = '#faf7f2';
+  ctx.fillRect(0,0,mazeCanvas.width,mazeCanvas.height);
+
+  // Draw path
+  if (mazePath.length > 0) {
+    ctx.strokeStyle = 'rgba(90,122,90,0.35)';
+    ctx.lineWidth = cs * 0.35;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    ctx.beginPath();
+    mazePath.forEach((p,i) => {
+      const x = p.c*cs + cs/2, y = p.r*cs + cs/2;
+      if (i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+    });
+    ctx.stroke();
+  }
+
+  // Walls
+  ctx.strokeStyle = '#5a7a5a';
+  ctx.lineWidth = 2;
+  for (let r=0;r<mazeRows;r++) {
+    for (let c=0;c<mazeCols;c++) {
+      const x=c*cs,y=r*cs,cell=mazeData[r][c];
+      ctx.beginPath();
+      if (cell.walls.N) { ctx.moveTo(x,y); ctx.lineTo(x+cs,y); }
+      if (cell.walls.S) { ctx.moveTo(x,y+cs); ctx.lineTo(x+cs,y+cs); }
+      if (cell.walls.W) { ctx.moveTo(x,y); ctx.lineTo(x,y+cs); }
+      if (cell.walls.E) { ctx.moveTo(x+cs,y); ctx.lineTo(x+cs,y+cs); }
+      ctx.stroke();
+    }
+  }
+
+  // Entrance (top-left)
+  ctx.fillStyle = '#5a7a5a';
+  ctx.beginPath();
+  ctx.arc(cs/2, cs/2, cs*0.28, 0, Math.PI*2);
+  ctx.fill();
+  // Exit (bottom-right)
+  ctx.fillStyle = '#c8845a';
+  ctx.beginPath();
+  ctx.arc((mazeCols-0.5)*cs, (mazeRows-0.5)*cs, cs*0.28, 0, Math.PI*2);
+  ctx.fill();
+}
+
+function drawPlayer() {
+  const ctx = mazeCtx;
+  const cs = mazeCellSize;
+  const x = playerPos.c*cs + cs/2, y = playerPos.r*cs + cs/2;
+  ctx.fillStyle = '#5a7a5a';
+  ctx.beginPath();
+  ctx.arc(x, y, cs*0.28, 0, Math.PI*2);
+  ctx.fill();
+}
+
+function getCellFromPoint(x, y) {
+  return {
+    r: Math.max(0, Math.min(mazeRows-1, Math.floor(y/mazeCellSize))),
+    c: Math.max(0, Math.min(mazeCols-1, Math.floor(x/mazeCellSize)))
+  };
+}
+
+function mazeStartDraw(e) {
+  if (mazeSolved) return;
+  mazeDrawing = true;
+  const rect = mazeCanvas.getBoundingClientRect();
+  const pos = getCellFromPoint(e.clientX-rect.left, e.clientY-rect.top);
+  mazePath = [pos];
+  playerPos = pos;
+  drawMaze(); drawPlayer();
+}
+function mazeMoveDraw(e) {
+  if (!mazeDrawing || mazeSolved) return;
+  const rect = mazeCanvas.getBoundingClientRect();
+  const pos = getCellFromPoint(e.clientX-rect.left, e.clientY-rect.top);
+  const last = mazePath[mazePath.length-1];
+  if (pos.r!==last.r || pos.c!==last.c) {
+    if (canMove(last, pos)) {
+      mazePath.push(pos);
+      playerPos = pos;
+      drawMaze();
+      drawPlayer();
+      if (pos.r===mazeRows-1 && pos.c===mazeCols-1) {
+        mazeSolved = true;
+        mazeDrawing = false;
+        document.getElementById('maze-message').textContent = t('maze-win');
+        saveRecord('maze', 1, 1);
+        showToast(t('well-done'));
+      }
+    }
+  }
+}
+function mazeEndDraw() { mazeDrawing = false; }
+function mazeTouchStart(e) {
+  e.preventDefault();
+  const t = e.touches[0];
+  const rect = mazeCanvas.getBoundingClientRect();
+  const pos = getCellFromPoint(t.clientX-rect.left, t.clientY-rect.top);
+  mazeDrawing = true; mazePath=[pos]; playerPos=pos;
+  drawMaze(); drawPlayer();
+}
+function mazeTouchMove(e) {
+  e.preventDefault();
+  if (!mazeDrawing || mazeSolved) return;
+  const touch = e.touches[0];
+  const rect = mazeCanvas.getBoundingClientRect();
+  const pos = getCellFromPoint(touch.clientX-rect.left, touch.clientY-rect.top);
+  const last = mazePath[mazePath.length-1];
+  if ((pos.r!==last.r || pos.c!==last.c) && canMove(last, pos)) {
+    mazePath.push(pos); playerPos=pos;
+    drawMaze(); drawPlayer();
+    if (pos.r===mazeRows-1 && pos.c===mazeCols-1) {
+      mazeSolved=true; mazeDrawing=false;
+      document.getElementById('maze-message').textContent = t('maze-win');
+      saveRecord('maze', 1, 1);
+      showToast(t('well-done'));
+    }
+  }
+}
+
+function canMove(from, to) {
+  const dr=to.r-from.r, dc=to.c-from.c;
+  if (Math.abs(dr)+Math.abs(dc)!==1) return false;
+  const cell=mazeData[from.r][from.c];
+  if (dr===-1) return !cell.walls.N;
+  if (dr===1) return !cell.walls.S;
+  if (dc===1) return !cell.walls.E;
+  if (dc===-1) return !cell.walls.W;
+  return false;
+}
+
+function solveMaze() {
+  // BFS
+  const visited = Array.from({length:mazeRows},()=>Array(mazeRows).fill(false));
+  const parent = Array.from({length:mazeRows},()=>Array(mazeCols).fill(null));
+  const queue = [{r:0,c:0}];
+  visited[0][0]=true;
+  while (queue.length) {
+    const cur=queue.shift();
+    if (cur.r===mazeRows-1&&cur.c===mazeCols-1) break;
+    const cell=mazeData[cur.r][cur.c];
+    const moves=[['N',-1,0],['S',1,0],['E',0,1],['W',0,-1]];
+    for (const [d,dr,dc] of moves) {
+      if (!cell.walls[d]) {
+        const nr=cur.r+dr,nc=cur.c+dc;
+        if (!visited[nr][nc]) { visited[nr][nc]=true;parent[nr][nc]=cur;queue.push({r:nr,c:nc}); }
+      }
+    }
+  }
+  // Trace back
+  const path=[];
+  let cur={r:mazeRows-1,c:mazeCols-1};
+  while(cur){path.unshift(cur);cur=parent[cur.r][cur.c];}
+  mazePath=path;
+  playerPos={r:mazeRows-1,c:mazeCols-1};
+  drawMaze();
+  // Draw solution in orange
+  const ctx=mazeCtx,cs=mazeCellSize;
+  ctx.strokeStyle='rgba(200,132,90,0.7)';
+  ctx.lineWidth=cs*0.3;ctx.lineCap='round';ctx.lineJoin='round';
+  ctx.beginPath();
+  path.forEach((p,i)=>{
+    const x=p.c*cs+cs/2,y=p.r*cs+cs/2;
+    if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);
+  });
+  ctx.stroke();
+  drawPlayer();
+}
+
+// ===================== DIFFICULTY =====================
+const diffSettings = { ws: 'easy', sudoku: 'easy' };
+function setDiff(puzzle, level, btn) {
+  diffSettings[puzzle] = level;
+  btn.closest('.diff-selector').querySelectorAll('.diff-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  const initMap = { ws: initWordSearch, sudoku: initSudoku };
+  if (initMap[puzzle]) initMap[puzzle]();
+}
+function setCWDiff(level, btn) {
+  btn.closest('.diff-selector').querySelectorAll('.diff-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  cwDiff = level; // FIX: was incorrectly writing to diffSettings.cw
+  initCrossword();
+}
+function setMemDiff(pairs, btn) {
+  btn.closest('.diff-selector').querySelectorAll('.diff-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  memPairCount = pairs;
+  initMemory();
+}
+
+function wsWordCount() {
+  return diffSettings.ws === 'easy' ? 6 : diffSettings.ws === 'hard' ? 12 : 10;
+}
+
+// ===================== DAILY QUOTE =====================
+const quotesES = [
+  { text: '"La tranquilidad no es ausencia de tormenta, sino paz en medio de ella."', author: '— Anónimo' },
+  { text: '"Cada día es una nueva oportunidad para cambiar tu vida."', author: '— Anónimo' },
+  { text: '"La felicidad no depende de lo que te pasa, sino de lo que haces con lo que te pasa."', author: '— Viktor Frankl' },
+  { text: '"Cuida tu cuerpo. Es el único lugar donde tienes que vivir."', author: '— Jim Rohn' },
+  { text: '"La gratitud convierte lo que tenemos en suficiente."', author: '— Anónimo' },
+  { text: '"Un poco de bondad puede alegrar un día sombrío."', author: '— Anónimo' },
+  { text: '"La paz interior comienza en el momento en que eliges no permitir que otra persona o evento controle tus emociones."', author: '— Pema Chödrön' },
+  { text: '"Envejecer es como escalar una gran montaña: mientras se sube las fuerzas disminuyen, pero la mirada es más libre."', author: '— Ingmar Bergman' },
+  { text: '"La memoria es el diario que todos llevamos con nosotros."', author: '— Oscar Wilde' },
+  { text: '"Sonríe, respira y ve despacio."', author: '— Thich Nhat Hanh' },
+  { text: '"La vida no se mide por las veces que respiras sino por los momentos que te dejan sin aliento."', author: '— Anónimo' },
+  { text: '"Hoy es un buen día para tener un buen día."', author: '— Anónimo' }
+];
+const quotesEN = [
+  { text: '"Calmness is not the absence of storm, but peace in the midst of it."', author: '— Anonymous' },
+  { text: '"Every day is a new opportunity to change your life."', author: '— Anonymous' },
+  { text: '"Happiness does not depend on what happens to you, but on what you do with what happens."', author: '— Viktor Frankl' },
+  { text: '"Take care of your body. It\'s the only place you have to live."', author: '— Jim Rohn' },
+  { text: '"Gratitude turns what we have into enough."', author: '— Anonymous' },
+  { text: '"A little kindness can brighten a dark day."', author: '— Anonymous' },
+  { text: '"Inner peace begins the moment you choose not to allow another person or event to control your emotions."', author: '— Pema Chödrön' },
+  { text: '"Growing old is like climbing a great mountain: as you climb forces diminish, but the view is more free."', author: '— Ingmar Bergman' },
+  { text: '"Memory is the diary we all carry with us."', author: '— Oscar Wilde' },
+  { text: '"Smile, breathe, and go slowly."', author: '— Thich Nhat Hanh' },
+  { text: '"Life is not measured by the breaths you take, but by the moments that take your breath away."', author: '— Anonymous' },
+  { text: '"Today is a good day to have a good day."', author: '— Anonymous' }
+];
+
+function renderDailyQuote() {
+  const quotes = lang === 'es' ? quotesES : quotesEN;
+  const idx = new Date().getDate() % quotes.length;
+  const q = quotes[idx];
+  document.getElementById('daily-quote-text').textContent = q.text;
+  document.getElementById('daily-quote-author').textContent = q.author;
+}
+
+// ===================== CROSSWORD =====================
+const cwDataES = {
+  easy: {
+    grid: [
+      ['P','A','Z','#','#'],
+      ['#','M','#','F','#'],
+      ['#','O','#','E','#'],
+      ['#','R','#','#','#'],
+      ['#','#','#','#','#']
+    ],
+    across: [
+      { num: 1, row: 0, col: 0, len: 3, clue: 'Tranquilidad del alma', answer: 'PAZ' }
+    ],
+    down: [
+      { num: 2, row: 0, col: 1, len: 4, clue: 'Querer profundamente', answer: 'AMOR' },
+      { num: 3, row: 0, col: 3, len: 2, clue: 'Confianza en lo divino', answer: 'FE' }
+    ]
+  },
+  hard: {
+    grid: [
+      ['C','A','L','M','A','#','#'],
+      ['#','#','U','#','M','#','#'],
+      ['P','A','Z','#','O','#','#'],
+      ['#','#','#','#','R','#','#'],
+      ['V','I','D','A','#','#','#'],
+      ['#','#','#','#','#','#','#'],
+      ['#','#','#','#','#','#','#']
+    ],
+    across: [
+      { num: 1, row: 0, col: 0, len: 5, clue: 'Tranquilidad, serenidad', answer: 'CALMA' },
+      { num: 3, row: 2, col: 0, len: 3, clue: 'Ausencia de conflicto', answer: 'PAZ' },
+      { num: 5, row: 4, col: 0, len: 4, clue: 'Existencia, ser', answer: 'VIDA' }
+    ],
+    down: [
+      { num: 2, row: 0, col: 2, len: 3, clue: 'Emitir brillo propio', answer: 'LUZ' },
+      { num: 4, row: 0, col: 4, len: 4, clue: 'Sentimiento de querer', answer: 'AMOR' }
+    ]
+  }
+};
+const cwDataEN = {
+  easy: {
+    // JOY down col 0, YOGA across row 2 — intersect at (2,0)=Y
+    grid: [
+      ['J','#','#','#','#'],
+      ['O','#','#','#','#'],
+      ['Y','O','G','A','#'],
+      ['#','#','#','#','#'],
+      ['#','#','#','#','#']
+    ],
+    across: [
+      { num: 2, row: 2, col: 0, len: 4, clue: 'Ancient mind-body practice', answer: 'YOGA' }
+    ],
+    down: [
+      { num: 1, row: 0, col: 0, len: 3, clue: 'A feeling of great happiness', answer: 'JOY' }
+    ]
+  },
+  hard: {
+    // BRAVE down col 2, GRACE across row 1 intersect at (1,2)=R
+    // CHEER across row 4 intersects BRAVE at (4,2)=E
+    grid: [
+      ['#','#','B','#','#','#'],
+      ['#','G','R','A','C','E'],
+      ['#','#','A','#','#','#'],
+      ['#','#','V','#','#','#'],
+      ['C','H','E','E','R','#'],
+      ['#','#','#','#','#','#']
+    ],
+    across: [
+      { num: 2, row: 1, col: 1, len: 5, clue: 'Elegance, goodwill, divine favor', answer: 'GRACE' },
+      { num: 3, row: 4, col: 0, len: 5, clue: 'Shout of encouragement or joy', answer: 'CHEER' }
+    ],
+    down: [
+      { num: 1, row: 0, col: 2, len: 5, clue: 'Courageous and bold', answer: 'BRAVE' }
+    ]
+  }
+};
+
+let cwDiff = 'easy';
+let cwClues = { across: [], down: [] };
+let cwAnswerGrid = [];
+
+function initCrossword() {
+  document.getElementById('cw-sol').style.display = 'none';
+  const data = (lang === 'es' ? cwDataES : cwDataEN)[cwDiff] || (lang === 'es' ? cwDataES : cwDataEN)['easy'];
+  cwClues = { across: data.across, down: data.down };
+  const gridTemplate = data.grid;
+  const rows = gridTemplate.length, cols = gridTemplate[0].length;
+  cwAnswerGrid = gridTemplate;
+
+  // Build table
+  const table = document.getElementById('cw-grid');
+  table.innerHTML = '';
+  // Number map
+  const numMap = {};
+  [...data.across, ...data.down].forEach(c => { numMap[`${c.row},${c.col}`] = c.num; });
+
+  for (let r = 0; r < rows; r++) {
+    const tr = document.createElement('tr');
+    for (let c = 0; c < cols; c++) {
+      const td = document.createElement('td');
+      const val = gridTemplate[r][c];
+      if (val === '#') {
+        td.classList.add('black');
+      } else {
+        if (numMap[`${r},${c}`]) {
+          const num = document.createElement('span');
+          num.className = 'cw-num';
+          num.textContent = numMap[`${r},${c}`];
+          td.appendChild(num);
+        }
+        const inp = document.createElement('input');
+        inp.type = 'text'; inp.maxLength = 1;
+        inp.dataset.r = r; inp.dataset.c = c; inp.dataset.ans = val;
+        inp.addEventListener('input', e => {
+          inp.value = inp.value.toUpperCase().replace(/[^A-ZÁÉÍÓÚÑ]/g,'');
+          inp.classList.remove('correct-cell','error-cell');
+        });
+        inp.addEventListener('keydown', e => {
+          if (e.key === 'Backspace' && inp.value === '') {
+            // move to prev
+            const prev = table.querySelector(`input[data-r="${r}"][data-c="${c-1}"]`) ||
+                         table.querySelector(`input[data-r="${r-1}"]`);
+            if (prev) prev.focus();
+          }
+          if (e.key !== 'Backspace' && inp.value.length >= 1) {
+            // move to next
+            setTimeout(() => {
+              const next = table.querySelector(`input[data-r="${r}"][data-c="${c+1}"]`) ||
+                           table.querySelector(`input[data-r="${r+1}"][data-c="0"]`);
+              if (next) next.focus();
+            }, 0);
+          }
+        });
+        td.appendChild(inp);
+      }
+      tr.appendChild(td);
+    }
+    table.appendChild(tr);
+  }
+
+  // Clues
+  const cluesEl = document.getElementById('cw-clues-container');
+  cluesEl.innerHTML = '';
+  const acrossDiv = document.createElement('div');
+  acrossDiv.className = 'cw-clues';
+  acrossDiv.innerHTML = `<h4>${lang==='es'?'Horizontal':'Across'}</h4>`;
+  data.across.forEach(c => {
+    const d = document.createElement('div');
+    d.className = 'cw-clue-item'; d.id = `cwc-a-${c.num}`;
+    d.textContent = `${c.num}. ${c.clue}`;
+    d.onclick = () => {
+      const inp = table.querySelector(`input[data-r="${c.row}"][data-c="${c.col}"]`);
+      if (inp) inp.focus();
+    };
+    acrossDiv.appendChild(d);
+  });
+  const downDiv = document.createElement('div');
+  downDiv.className = 'cw-clues'; downDiv.style.marginTop = '16px';
+  downDiv.innerHTML = `<h4>${lang==='es'?'Vertical':'Down'}</h4>`;
+  data.down.forEach(c => {
+    const d = document.createElement('div');
+    d.className = 'cw-clue-item'; d.id = `cwc-d-${c.num}`;
+    d.textContent = `${c.num}. ${c.clue}`;
+    d.onclick = () => {
+      const inp = table.querySelector(`input[data-r="${c.row}"][data-c="${c.col}"]`);
+      if (inp) inp.focus();
+    };
+    downDiv.appendChild(d);
+  });
+  cluesEl.appendChild(acrossDiv);
+  cluesEl.appendChild(downDiv);
+
+  // Solution
+  let solHtml = `<strong>${lang==='es'?'Horizontal':'Across'}:</strong><br>`;
+  data.across.forEach(c => { solHtml += `${c.num}. ${c.answer}<br>`; });
+  solHtml += `<br><strong>${lang==='es'?'Vertical':'Down'}:</strong><br>`;
+  data.down.forEach(c => { solHtml += `${c.num}. ${c.answer}<br>`; });
+  document.getElementById('cw-sol-content').innerHTML = solHtml;
+}
+
+function checkCrossword() {
+  const inputs = document.querySelectorAll('#cw-grid input');
+  let correct = 0, total = 0;
+  inputs.forEach(inp => {
+    total++;
+    if (inp.value.toUpperCase() === inp.dataset.ans) {
+      inp.classList.add('correct-cell'); inp.classList.remove('error-cell');
+      correct++;
+    } else if (inp.value !== '') {
+      inp.classList.add('error-cell'); inp.classList.remove('correct-cell');
+    }
+  });
+  if (correct === total) showToast(t('well-done'));
+}
+
+// ===================== MEMORY GAME =====================
+const memWordsES = ['PAZ','AMOR','CALMA','FE','LUZ','GOZO','VALOR','VIDA','ESPERANZA','GRATITUD','SONRISA','ALEGRÍA','FUERZA','BONDAD','SALUD','CRECER'];
+const memWordsEN = ['PEACE','LOVE','CALM','FAITH','LIGHT','JOY','BRAVE','LIFE','HOPE','GRACE','SMILE','HAPPY','STRONG','KIND','HEALTH','GROW'];
+const memEmojis = ['🌿','💚','🌸','⭐','🌞','🍃','🌺','🦋','🌈','🕊️','💫','🌻','🌙','🍀','🌊','🌷'];
+
+let memPairCount = 8;
+let memFlipped = [], memMatched = 0, memMoves = 0, memLocked = false;
+
+function initMemory() {
+  document.getElementById('mem-stats').innerHTML = '';
+  memFlipped = []; memMatched = 0; memMoves = 0; memLocked = false;
+  const words = (lang === 'es' ? memWordsES : memWordsEN).slice(0, memPairCount);
+  const emojis = memEmojis.slice(0, memPairCount);
+  // Create pairs: word + emoji
+  let cards = [];
+  words.forEach((w, i) => {
+    cards.push({ id: i, type: 'word', value: w, emoji: emojis[i] });
+    cards.push({ id: i, type: 'emoji', value: emojis[i], emoji: emojis[i] });
+  });
+  shuffle(cards);
+
+  const grid = document.getElementById('memory-grid');
+  const cols = memPairCount <= 8 ? 4 : memPairCount <= 12 ? 4 : 4;
+  grid.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
+  grid.style.maxWidth = `${cols * 90}px`;
+  grid.innerHTML = '';
+
+  cards.forEach((card, idx) => {
+    const div = document.createElement('div');
+    div.className = 'mem-card';
+    div.style.height = memPairCount <= 8 ? '80px' : '70px';
+    div.dataset.id = card.id;
+    div.dataset.idx = idx;
+    div.innerHTML = `
+      <div class="mem-card-inner">
+        <div class="mem-card-front">🌿</div>
+        <div class="mem-card-back">${card.type === 'word' ? card.value : card.value}</div>
+      </div>`;
+    div.addEventListener('click', () => flipCard(div, card));
+    grid.appendChild(div);
+  });
+  updateMemStats();
+}
+
+function flipCard(div, card) {
+  if (memLocked || div.classList.contains('flipped') || div.classList.contains('matched')) return;
+  div.classList.add('flipped');
+  memFlipped.push({ div, card });
+  if (memFlipped.length === 2) {
+    memMoves++;
+    memLocked = true;
+    setTimeout(checkMemMatch, 900);
+  }
+  updateMemStats();
+}
+
+function checkMemMatch() {
+  const [a, b] = memFlipped;
+  if (a.card.id === b.card.id && a.card.type !== b.card.type) {
+    a.div.classList.add('matched'); b.div.classList.add('matched');
+    a.div.querySelector('.mem-card-back').classList.add('matched');
+    b.div.querySelector('.mem-card-back').classList.add('matched');
+    memMatched++;
+    if (memMatched === memPairCount) {
+      saveRecord('mem', memMatched, memPairCount);
+      setTimeout(() => showToast(t('well-done')), 300);
+    }
+  } else {
+    a.div.classList.remove('flipped');
+    b.div.classList.remove('flipped');
+  }
+  memFlipped = []; memLocked = false;
+  updateMemStats();
+}
+
+function updateMemStats() {
+  document.getElementById('mem-stats').innerHTML =
+    `<span class="score-badge">${t('mem-moves') || 'Intentos'}: ${memMoves}</span> &nbsp;
+     <span class="score-badge">${t('mem-pairs') || 'Parejas'}: ${memMatched} ${t('of')} ${memPairCount}</span>`;
+}
+
+// ===================== FONT SIZE =====================
+function setFontSize(size) {
+  const sizes = { normal: '18px', lg: '20px', xl: '24px' };
+  document.documentElement.style.fontSize = sizes[size] || '18px';
+  document.body.classList.remove('font-lg','font-xl');
+  if (size === 'lg') document.body.classList.add('font-lg');
+  if (size === 'xl') document.body.classList.add('font-xl');
+  ['fs-normal','fs-lg','fs-xl'].forEach(id => document.getElementById(id).classList.remove('active'));
+  const map = {normal:'fs-normal',lg:'fs-lg',xl:'fs-xl'};
+  document.getElementById(map[size]).classList.add('active');
+  savePrefs();
+}
+
+// ===================== DARK MODE =====================
+function toggleDark() {
+  document.body.classList.toggle('dark-mode');
+  document.body.classList.remove('high-contrast');
+  document.getElementById('dark-btn').classList.toggle('active', document.body.classList.contains('dark-mode'));
+  document.getElementById('contrast-btn').classList.remove('active');
+  savePrefs();
+}
+
+// ===================== HIGH CONTRAST =====================
+function toggleContrast() {
+  document.body.classList.toggle('high-contrast');
+  document.body.classList.remove('dark-mode');
+  document.getElementById('contrast-btn').classList.toggle('active', document.body.classList.contains('high-contrast'));
+  document.getElementById('dark-btn').classList.remove('active');
+  savePrefs();
+}
+
+// ===================== LOCALSTORAGE =====================
+const LS = 'puzzleBundle_';
+function lsSave(key, val) { try { localStorage.setItem(LS + key, JSON.stringify(val)); } catch(e) {} }
+function lsLoad(key, def) { try { const v = localStorage.getItem(LS + key); return v !== null ? JSON.parse(v) : def; } catch(e) { return def; } }
+function lsClear(key) { try { localStorage.removeItem(LS + key); } catch(e) {} }
+
+function savePrefs() {
+  lsSave('prefs', {
+    lang,
+    fontSize: document.body.classList.contains('font-xl') ? 'xl' : document.body.classList.contains('font-lg') ? 'lg' : 'normal',
+    darkMode: document.body.classList.contains('dark-mode'),
+    highContrast: document.body.classList.contains('high-contrast')
+  });
+}
+
+function loadPrefs() {
+  const prefs = lsLoad('prefs', {});
+  if (prefs.lang) lang = prefs.lang;
+  if (prefs.fontSize) setFontSize(prefs.fontSize);
+  if (prefs.darkMode) {
+    document.body.classList.add('dark-mode');
+    const b = document.getElementById('dark-btn'); if (b) b.classList.add('active');
+  }
+  if (prefs.highContrast) {
+    document.body.classList.add('high-contrast');
+    const b = document.getElementById('contrast-btn'); if (b) b.classList.add('active');
+  }
+}
+
+// ===================== STREAK & RECORDS =====================
+let sessionRecords = lsLoad('records', {});
+let streakCount = lsLoad('streak', { count: 1, lastDate: null }).count;
+
+function todayStr() { return new Date().toISOString().slice(0, 10); }
+
+function markPlayed() {
+  const today = todayStr();
+  const data = lsLoad('streak', { count: 1, lastDate: null });
+  if (data.lastDate === today) return;
+  const d = new Date(); d.setDate(d.getDate() - 1);
+  const yesterday = d.toISOString().slice(0, 10);
+  data.count = (data.lastDate === yesterday) ? data.count + 1 : 1;
+  data.lastDate = today;
+  streakCount = data.count;
+  lsSave('streak', data);
+  renderStreak();
+}
+
+function saveRecord(puzzleId, score, total) {
+  if (!sessionRecords[puzzleId] || score > sessionRecords[puzzleId].score) {
+    sessionRecords[puzzleId] = { score, total };
+    lsSave('records', sessionRecords);
+  }
+  if (score === total && total > 0) {
+    const stats = lsLoad('stats', { completions: {}, totalCompleted: 0 });
+    stats.completions[puzzleId] = (stats.completions[puzzleId] || 0) + 1;
+    stats.totalCompleted = (stats.totalCompleted || 0) + 1;
+    lsSave('stats', stats);
+    renderStats();
+  }
+  renderStreak();
+  markPlayed();
+}
+
+function renderStreak() {
+  const numEl = document.getElementById('streak-num');
+  const labelEl = document.getElementById('streak-label');
+  if (numEl) numEl.textContent = streakCount;
+  if (labelEl) labelEl.textContent = streakCount === 1 ? tx('streak-label-1') : tx('streak-label');
+  const rec = document.getElementById('records-display');
+  if (!rec) return;
+  const entries = Object.entries(sessionRecords);
+  if (!entries.length) { rec.innerHTML = ''; return; }
+  const icons = {ws:'🔤',sudoku:'🔢',scramble:'🔀',ns:'🔍',wf:'✏️',nf:'🧩',maze:'🌀',cw:'📝',mem:'🃏',trivia:'🧠'};
+  rec.innerHTML = entries.slice(-4).map(([k,v]) =>
+    `<span class="record-item">${icons[k]||'🌿'} ${v.score}/${v.total}</span>`
+  ).join(' ');
+}
+
+function renderStats() {
+  const stats = lsLoad('stats', { completions: {}, totalCompleted: 0 });
+  const el = document.getElementById('total-completed');
+  if (el) el.textContent = stats.totalCompleted || 0;
+  const lbl = document.getElementById('total-label');
+  if (lbl) lbl.textContent = lang === 'es' ? 'completados' : 'completed';
+}
+
+// ===================== TRIVIA =====================
+const triviaDataES = {
+  easy: [
+    { q: '¿Cuál es el planeta más grande del sistema solar?', opts: ['Júpiter','Saturno','Neptuno','Marte'], a: 0 },
+    { q: '¿En qué continente se encuentra el río Amazonas?', opts: ['América del Sur','África','Asia','Europa'], a: 0 },
+    { q: '¿Cuántos colores tiene el arcoíris?', opts: ['7','5','6','8'], a: 0 },
+    { q: '¿Cuál es el animal terrestre más rápido?', opts: ['Guepardo','León','Caballo','Leopardo'], a: 0 },
+    { q: '¿En qué país está la Torre Eiffel?', opts: ['Francia','Italia','España','Bélgica'], a: 0 },
+    { q: '¿Cuántos continentes tiene la Tierra?', opts: ['7','5','6','8'], a: 0 },
+    { q: '¿Qué océano es el más grande del mundo?', opts: ['Pacífico','Atlántico','Índico','Ártico'], a: 0 },
+    { q: '¿Cuál es el metal más abundante en la corteza terrestre?', opts: ['Aluminio','Hierro','Cobre','Oro'], a: 0 }
+  ],
+  nostalgia: [
+    { q: '¿Qué cantante fue conocido como "El Rey del Rock" en los años 50?', opts: ['Elvis Presley','Chuck Berry','Little Richard','Buddy Holly'], a: 0 },
+    { q: '¿En qué década comenzó a transmitirse el programa "I Love Lucy"?', opts: ['1950s','1940s','1960s','1970s'], a: 0 },
+    { q: '¿Cuál fue el primer satélite artificial lanzado al espacio, en 1957?', opts: ['Sputnik','Explorer','Vanguard','Luna'], a: 0 },
+    { q: '¿Cómo se llamaba el famoso programa de variedades de Ed Sullivan?', opts: ['The Ed Sullivan Show','Sullivan Tonight','Ed Sullivan Variety','The Big Show'], a: 0 },
+    { q: '¿En qué año fue asesinado el presidente John F. Kennedy?', opts: ['1963','1961','1965','1968'], a: 0 },
+    { q: '¿Qué grupo musical inglés causó furor en los años 60 con "She Loves You"?', opts: ['The Beatles','The Rolling Stones','The Who','The Kinks'], a: 0 },
+    { q: '¿Cuál fue el año del primer alunizaje del Apolo 11?', opts: ['1969','1967','1971','1970'], a: 0 },
+    { q: '¿Cómo se llamaba el famoso baile de los años 60 popularizado por Chubby Checker?', opts: ['El Twist','El Watusi','El Mashed Potato','El Limbo'], a: 0 },
+    { q: '¿Qué película de 1939, relanzada en los 50s, narra la historia de Dorothy y el mago?', opts: ['El Mago de Oz','Blancanieves','Cenicienta','Bambi'], a: 0 },
+    { q: '¿En qué año terminó la Segunda Guerra Mundial?', opts: ['1945','1944','1946','1943'], a: 0 }
+  ],
+  hard: [
+    { q: '¿En qué año llegó el hombre a la Luna por primera vez?', opts: ['1969','1972','1965','1971'], a: 0 },
+    { q: '¿Qué escritor creó el personaje de Don Quijote?', opts: ['Cervantes','Lope de Vega','Quevedo','Góngora'], a: 0 },
+    { q: '¿Cuál es el hueso más largo del cuerpo humano?', opts: ['Fémur','Tibia','Húmero','Radio'], a: 0 },
+    { q: '¿Cuántos huesos tiene el cuerpo humano adulto?', opts: ['206','213','198','220'], a: 0 },
+    { q: '¿Quién pintó la Capilla Sixtina?', opts: ['Miguel Ángel','Da Vinci','Rafael','Botticelli'], a: 0 },
+    { q: '¿Cuál es el país más grande del mundo por superficie?', opts: ['Rusia','Canadá','China','EE.UU.'], a: 0 },
+    { q: '¿A qué velocidad viaja la luz aproximadamente?', opts: ['300.000 km/s','150.000 km/s','500.000 km/s','100.000 km/s'], a: 0 },
+    { q: '¿En qué año se fundó la Cruz Roja Internacional?', opts: ['1863','1901','1848','1885'], a: 0 }
+  ]
+};
+const triviaDataEN = {
+  easy: [
+    { q: 'What is the largest planet in our solar system?', opts: ['Jupiter','Saturn','Neptune','Mars'], a: 0 },
+    { q: 'On which continent is the Amazon River?', opts: ['South America','Africa','Asia','Europe'], a: 0 },
+    { q: 'How many colors are in a rainbow?', opts: ['7','5','6','8'], a: 0 },
+    { q: 'What is the fastest land animal?', opts: ['Cheetah','Lion','Horse','Leopard'], a: 0 },
+    { q: 'In which country is the Eiffel Tower?', opts: ['France','Italy','Spain','Belgium'], a: 0 },
+    { q: 'How many continents does Earth have?', opts: ['7','5','6','8'], a: 0 },
+    { q: 'Which is the largest ocean in the world?', opts: ['Pacific','Atlantic','Indian','Arctic'], a: 0 },
+    { q: 'What is the most abundant metal in Earth\'s crust?', opts: ['Aluminum','Iron','Copper','Gold'], a: 0 }
+  ],
+  nostalgia: [
+    { q: 'Which singer was known as the "King of Rock and Roll" in the 1950s?', opts: ['Elvis Presley','Chuck Berry','Little Richard','Buddy Holly'], a: 0 },
+    { q: 'In what decade did the TV show "I Love Lucy" first air?', opts: ['1950s','1940s','1960s','1970s'], a: 0 },
+    { q: 'What was the name of the first artificial satellite launched into space in 1957?', opts: ['Sputnik','Explorer','Vanguard','Luna'], a: 0 },
+    { q: 'What popular variety show did Ed Sullivan host for over 20 years?', opts: ['The Ed Sullivan Show','Sullivan Tonight','The Big Show','Ed Sullivan Variety'], a: 0 },
+    { q: 'In what year was President John F. Kennedy assassinated?', opts: ['1963','1961','1965','1968'], a: 0 },
+    { q: 'Which British band took America by storm in 1964 with "She Loves You"?', opts: ['The Beatles','The Rolling Stones','The Who','The Kinks'], a: 0 },
+    { q: 'In what year did Apollo 11 land on the Moon?', opts: ['1969','1967','1971','1970'], a: 0 },
+    { q: 'What dance craze of the early 1960s was popularized by Chubby Checker?', opts: ['The Twist','The Watusi','The Mashed Potato','The Limbo'], a: 0 },
+    { q: 'Which 1977 film featured the famous line "May the Force be with you"?', opts: ['Star Wars','Close Encounters','Superman','Grease'], a: 0 },
+    { q: 'What year did World War II end?', opts: ['1945','1944','1946','1943'], a: 0 }
+  ],
+  hard: [
+    { q: 'In what year did humans first land on the Moon?', opts: ['1969','1972','1965','1971'], a: 0 },
+    { q: 'Who wrote the character Don Quixote?', opts: ['Cervantes','Lope de Vega','Quevedo','Góngora'], a: 0 },
+    { q: 'What is the longest bone in the human body?', opts: ['Femur','Tibia','Humerus','Radius'], a: 0 },
+    { q: 'How many bones does the adult human body have?', opts: ['206','213','198','220'], a: 0 },
+    { q: 'Who painted the Sistine Chapel ceiling?', opts: ['Michelangelo','Da Vinci','Raphael','Botticelli'], a: 0 },
+    { q: 'What is the largest country in the world by area?', opts: ['Russia','Canada','China','USA'], a: 0 },
+    { q: 'Approximately how fast does light travel?', opts: ['300,000 km/s','150,000 km/s','500,000 km/s','100,000 km/s'], a: 0 },
+    { q: 'In what year was the International Red Cross founded?', opts: ['1863','1901','1848','1885'], a: 0 }
+  ]
+};
+
+let triviaQuestions = [], triviaIdx = 0, triviaScore = 0, triviaDiff = 'easy', triviaActive = false;
+
+function setTriviaDiff(level, btn) {
+  triviaDiff = level;
+  btn.closest('.diff-selector').querySelectorAll('.diff-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  initTrivia();
+}
+
+function initTrivia() {
+  const src = (lang === 'es' ? triviaDataES : triviaDataEN)[triviaDiff];
+  triviaQuestions = shuffle([...src]);
+  triviaIdx = 0; triviaScore = 0; triviaActive = true;
+  document.getElementById('trivia-result').textContent = '';
+  document.getElementById('trivia-score-display').innerHTML = '';
+  renderTriviaQuestion();
+}
+
+function renderTriviaQuestion() {
+  const box = document.getElementById('trivia-question-box');
+  const bar = document.getElementById('trivia-progress-bar');
+  if (triviaIdx >= triviaQuestions.length) { endTrivia(); return; }
+  const q = triviaQuestions[triviaIdx];
+  bar.style.width = `${(triviaIdx / triviaQuestions.length) * 100}%`;
+  const shuffledOpts = q.opts.map((o, i) => ({ text: o, orig: i }));
+  shuffle(shuffledOpts);
+  const correctShuffled = shuffledOpts.findIndex(o => o.orig === q.a);
+  box.innerHTML = `
+    <div class="trivia-q-num">${triviaIdx + 1} / ${triviaQuestions.length}</div>
+    <div class="trivia-q-text">${q.q}</div>
+    <div class="trivia-options">
+      ${shuffledOpts.map((o, i) => `
+        <button class="trivia-opt" onclick="answerTrivia(${i}, ${correctShuffled}, this.closest('.trivia-options'))">${o.text}</button>
+      `).join('')}
+    </div>`;
+}
+
+function answerTrivia(chosen, correct, container) {
+  const btns = container.querySelectorAll('.trivia-opt');
+  btns.forEach(b => b.disabled = true);
+  btns[correct].classList.add('correct');
+  if (chosen === correct) {
+    triviaScore++;
+    document.getElementById('trivia-result').textContent = tx('trivia-correct');
+  } else {
+    btns[chosen].classList.add('wrong');
+    document.getElementById('trivia-result').textContent = tx('trivia-wrong');
+  }
+  triviaIdx++;
+  setTimeout(() => {
+    document.getElementById('trivia-result').textContent = '';
+    renderTriviaQuestion();
+  }, 1400);
+}
+
+function endTrivia() {
+  document.getElementById('trivia-progress-bar').style.width = '100%';
+  document.getElementById('trivia-question-box').innerHTML = `
+    <div style="text-align:center; padding:20px 0;">
+      <div style="font-size:3rem; margin-bottom:12px;">🧠</div>
+      <div style="font-size:1.4rem; font-weight:bold; color:var(--green); margin-bottom:8px;">${tx('trivia-done')}</div>
+    </div>`;
+  document.getElementById('trivia-score-display').innerHTML =
+    `<span class="score-badge">${tx('trivia-your-score')}: ${triviaScore} ${t('of')} ${triviaQuestions.length}</span>`;
+  saveRecord('trivia', triviaScore, triviaQuestions.length);
+  if (triviaScore === triviaQuestions.length) showToast(t('well-done'));
+}
+
+// ===================== BREATHING =====================
+const breathPatterns = {
+  '478': { inhale:4, hold:7, exhale:8, rest:0, name:'4-7-8' },
+  'box':  { inhale:4, hold:4, exhale:4, rest:4, name:'Box' },
+  'calm': { inhale:4, hold:2, exhale:6, rest:2, name:'Calm' }
+};
+let breathPattern = '478', breathRunning = false, breathTimer = null;
+let breathCycles = 0;
+
+function setBreathPattern(p, btn) {
+  breathPattern = p;
+  document.querySelectorAll('.breath-pattern-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  if (breathRunning) { stopBreath(); startBreath(); }
+}
+
+function initBreath() {
+  stopBreath();
+  document.getElementById('breath-phase').textContent = '';
+  document.getElementById('breath-counter').textContent = '';
+  document.getElementById('breath-instruction').textContent = '';
+  document.getElementById('breath-cycles').textContent = '';
+  document.getElementById('breath-start-btn').textContent = tx('breath-start');
+  resetBreathCircle();
+}
+
+function toggleBreath() {
+  if (breathRunning) { stopBreath(); } else { startBreath(); }
+}
+
+function resetBreathCircle() {
+  const c = document.getElementById('breath-circle');
+  if (c) { c.style.transition = 'none'; c.style.transform = 'scale(1)'; }
+}
+
+function startBreath() {
+  breathRunning = true;
+  breathCycles = 0;
+  document.getElementById('breath-start-btn').textContent = tx('breath-stop');
+  runBreathPhase();
+}
+
+function stopBreath() {
+  breathRunning = false;
+  clearTimeout(breathTimer);
+  document.getElementById('breath-start-btn').textContent = tx('breath-start');
+  resetBreathCircle();
+  document.getElementById('breath-phase').textContent = '';
+  document.getElementById('breath-counter').textContent = '';
+  document.getElementById('breath-instruction').textContent = '';
+}
+
+function runBreathPhase() {
+  if (!breathRunning) return;
+  const p = breathPatterns[breathPattern];
+  const phases = [
+    { key:'inhale', dur:p.inhale, scale:1.5, emoji:'🌬️' },
+    { key:'hold',   dur:p.hold,   scale:1.5, emoji:'⭐' },
+    { key:'exhale', dur:p.exhale, scale:1.0, emoji:'🌿' },
+    { key:'rest',   dur:p.rest,   scale:1.0, emoji:'🌿' }
+  ].filter(ph => ph.dur > 0);
+
+  let phaseIdx = 0;
+  function doPhase() {
+    if (!breathRunning) return;
+    if (phaseIdx >= phases.length) {
+      breathCycles++;
+      document.getElementById('breath-cycles').textContent =
+        `${breathCycles} ${tx('breath-cycles-label')}`;
+      phaseIdx = 0;
+      markPlayed();
+    }
+    const ph = phases[phaseIdx];
+    const phaseNames = {
+      inhale: tx('breath-inhale'), hold: tx('breath-hold'),
+      exhale: tx('breath-exhale'), rest: tx('breath-rest')
+    };
+    document.getElementById('breath-phase').textContent = phaseNames[ph.key];
+    document.getElementById('breath-emoji').textContent = ph.emoji;
+    const circle = document.getElementById('breath-circle');
+    circle.style.transition = `transform ${ph.dur}s ease-in-out`;
+    circle.style.transform = `scale(${ph.scale})`;
+    let secs = ph.dur;
+    document.getElementById('breath-counter').textContent = secs;
+    const instructions = {
+      inhale: lang==='es'?'Inhala lentamente por la nariz':'Inhale slowly through your nose',
+      hold:   lang==='es'?'Mantén el aire':'Hold your breath',
+      exhale: lang==='es'?'Exhala lentamente por la boca':'Exhale slowly through your mouth',
+      rest:   lang==='es'?'Descansa':'Rest'
+    };
+    document.getElementById('breath-instruction').textContent = instructions[ph.key];
+    const countDown = setInterval(() => {
+      secs--;
+      if (document.getElementById('breath-counter'))
+        document.getElementById('breath-counter').textContent = secs > 0 ? secs : '';
+    }, 1000);
+    breathTimer = setTimeout(() => {
+      clearInterval(countDown);
+      phaseIdx++;
+      doPhase();
+    }, ph.dur * 1000);
+  }
+  doPhase();
+}
+
+// ===================== COLORING PAGE =====================
+const colorPalette = [
+  '#E74C3C','#E67E22','#F1C40F','#2ECC71','#27AE60','#1ABC9C',
+  '#3498DB','#2980B9','#9B59B6','#8E44AD','#E91E63','#FF5722',
+  '#795548','#607D8B','#34495E','#F39C12','#D35400','#16A085',
+  '#FFEAA7','#DFE6E9'
+];
+let colorSelected = '#E74C3C';
+let colorHistory = [];
+let colorSceneIdx = 0;
+
+const colorScenes = [
+  { en:'Garden', es:'Jardín', svg: `<svg viewBox="0 0 400 300" id="coloring-svg" xmlns="http://www.w3.org/2000/svg" style="max-width:480px;width:100%;display:block;margin:0 auto;cursor:crosshair;border-radius:12px;border:2px solid var(--border)">
+<rect class="cr" x="0" y="0" width="400" height="195" fill="white" stroke="#444" stroke-width="2"/>
+<circle class="cr" cx="60" cy="55" r="40" fill="white" stroke="#444" stroke-width="2.5"/>
+<path class="cr" d="M130,65 Q140,42 165,48 Q175,32 198,40 Q212,30 220,46 Q230,40 234,55 Q238,64 220,68 Q224,80 206,78 Q200,86 182,80 Q168,86 154,78 Q138,80 130,65Z" fill="white" stroke="#444" stroke-width="2"/>
+<path class="cr" d="M270,52 Q282,32 308,40 Q320,26 344,36 Q358,28 364,46 Q376,44 378,60 Q380,72 360,72 Q362,84 342,80 Q334,90 312,82 Q298,88 284,80 Q266,80 270,52Z" fill="white" stroke="#444" stroke-width="2"/>
+<rect class="cr" x="0" y="195" width="400" height="105" fill="white" stroke="#444" stroke-width="2"/>
+<ellipse class="cr" cx="72" cy="206" rx="110" ry="65" fill="white" stroke="#444" stroke-width="2"/>
+<ellipse class="cr" cx="340" cy="208" rx="115" ry="68" fill="white" stroke="#444" stroke-width="2"/>
+<line x1="95" y1="285" x2="95" y2="228" stroke="#444" stroke-width="3"/>
+<ellipse class="cr" cx="95" cy="218" rx="10" ry="9" fill="white" stroke="#444" stroke-width="2"/>
+<ellipse class="cr" cx="81" cy="208" rx="9" ry="8" fill="white" stroke="#444" stroke-width="2"/>
+<ellipse class="cr" cx="95" cy="200" rx="9" ry="8" fill="white" stroke="#444" stroke-width="2"/>
+<ellipse class="cr" cx="109" cy="208" rx="9" ry="8" fill="white" stroke="#444" stroke-width="2"/>
+<ellipse class="cr" cx="81" cy="228" rx="9" ry="8" fill="white" stroke="#444" stroke-width="2"/>
+<ellipse class="cr" cx="109" cy="228" rx="9" ry="8" fill="white" stroke="#444" stroke-width="2"/>
+<circle class="cr" cx="95" cy="214" r="8" fill="white" stroke="#444" stroke-width="2"/>
+<line x1="200" y1="285" x2="200" y2="232" stroke="#444" stroke-width="3"/>
+<ellipse class="cr" cx="200" cy="222" rx="10" ry="9" fill="white" stroke="#444" stroke-width="2"/>
+<ellipse class="cr" cx="186" cy="212" rx="9" ry="8" fill="white" stroke="#444" stroke-width="2"/>
+<ellipse class="cr" cx="200" cy="204" rx="9" ry="8" fill="white" stroke="#444" stroke-width="2"/>
+<ellipse class="cr" cx="214" cy="212" rx="9" ry="8" fill="white" stroke="#444" stroke-width="2"/>
+<ellipse class="cr" cx="186" cy="232" rx="9" ry="8" fill="white" stroke="#444" stroke-width="2"/>
+<ellipse class="cr" cx="214" cy="232" rx="9" ry="8" fill="white" stroke="#444" stroke-width="2"/>
+<circle class="cr" cx="200" cy="218" r="8" fill="white" stroke="#444" stroke-width="2"/>
+<line x1="310" y1="285" x2="310" y2="228" stroke="#444" stroke-width="3"/>
+<ellipse class="cr" cx="310" cy="218" rx="10" ry="9" fill="white" stroke="#444" stroke-width="2"/>
+<ellipse class="cr" cx="296" cy="208" rx="9" ry="8" fill="white" stroke="#444" stroke-width="2"/>
+<ellipse class="cr" cx="310" cy="200" rx="9" ry="8" fill="white" stroke="#444" stroke-width="2"/>
+<ellipse class="cr" cx="324" cy="208" rx="9" ry="8" fill="white" stroke="#444" stroke-width="2"/>
+<ellipse class="cr" cx="296" cy="228" rx="9" ry="8" fill="white" stroke="#444" stroke-width="2"/>
+<ellipse class="cr" cx="324" cy="228" rx="9" ry="8" fill="white" stroke="#444" stroke-width="2"/>
+<circle class="cr" cx="310" cy="214" r="8" fill="white" stroke="#444" stroke-width="2"/>
+</svg>` },
+  { en:'Butterfly', es:'Mariposa', svg: `<svg viewBox="0 0 400 300" id="coloring-svg" xmlns="http://www.w3.org/2000/svg" style="max-width:480px;width:100%;display:block;margin:0 auto;cursor:crosshair;border-radius:12px;border:2px solid var(--border)">
+<rect class="cr" x="0" y="0" width="400" height="300" fill="white" stroke="#444" stroke-width="2"/>
+<rect class="cr" x="0" y="230" width="400" height="70" fill="white" stroke="#444" stroke-width="2"/>
+<path class="cr" d="M200,80 Q160,30 100,50 Q50,70 80,130 Q100,170 200,150Z" fill="white" stroke="#444" stroke-width="2.5"/>
+<path class="cr" d="M200,80 Q240,30 300,50 Q350,70 320,130 Q300,170 200,150Z" fill="white" stroke="#444" stroke-width="2.5"/>
+<path class="cr" d="M200,150 Q150,160 120,200 Q110,230 160,230 Q190,210 200,190Z" fill="white" stroke="#444" stroke-width="2.5"/>
+<path class="cr" d="M200,150 Q250,160 280,200 Q290,230 240,230 Q210,210 200,190Z" fill="white" stroke="#444" stroke-width="2.5"/>
+<ellipse class="cr" cx="200" cy="120" rx="8" ry="42" fill="white" stroke="#444" stroke-width="2.5"/>
+<circle class="cr" cx="170" cy="95" r="14" fill="white" stroke="#444" stroke-width="2"/>
+<circle class="cr" cx="230" cy="95" r="14" fill="white" stroke="#444" stroke-width="2"/>
+<circle class="cr" cx="150" cy="130" r="10" fill="white" stroke="#444" stroke-width="2"/>
+<circle class="cr" cx="250" cy="130" r="10" fill="white" stroke="#444" stroke-width="2"/>
+<path d="M196,78 Q188,60 175,50" fill="none" stroke="#444" stroke-width="2"/>
+<path d="M204,78 Q212,60 225,50" fill="none" stroke="#444" stroke-width="2"/>
+<circle cx="174" cy="49" r="4" fill="#444"/>
+<circle cx="226" cy="49" r="4" fill="#444"/>
+<line x1="200" y1="250" x2="200" y2="230" stroke="#444" stroke-width="3"/>
+<ellipse class="cr" cx="200" cy="240" rx="10" ry="9" fill="white" stroke="#444" stroke-width="2"/>
+<ellipse class="cr" cx="186" cy="232" rx="9" ry="8" fill="white" stroke="#444" stroke-width="2"/>
+<ellipse class="cr" cx="200" cy="224" rx="9" ry="8" fill="white" stroke="#444" stroke-width="2"/>
+<ellipse class="cr" cx="214" cy="232" rx="9" ry="8" fill="white" stroke="#444" stroke-width="2"/>
+<circle class="cr" cx="200" cy="236" r="7" fill="white" stroke="#444" stroke-width="2"/>
+</svg>` },
+  { en:'Mandala', es:'Mandala', svg: `<svg viewBox="0 0 400 400" id="coloring-svg" xmlns="http://www.w3.org/2000/svg" style="max-width:400px;width:100%;display:block;margin:0 auto;cursor:crosshair;border-radius:12px;border:2px solid var(--border)">
+<rect class="cr" x="0" y="0" width="400" height="400" fill="white" stroke="#444" stroke-width="2"/>
+<circle class="cr" cx="200" cy="200" r="28" fill="white" stroke="#444" stroke-width="2.5"/>
+<ellipse class="cr" transform="rotate(0 200 200)" cx="200" cy="155" rx="18" ry="32" fill="white" stroke="#444" stroke-width="2"/>
+<ellipse class="cr" transform="rotate(45 200 200)" cx="200" cy="155" rx="18" ry="32" fill="white" stroke="#444" stroke-width="2"/>
+<ellipse class="cr" transform="rotate(90 200 200)" cx="200" cy="155" rx="18" ry="32" fill="white" stroke="#444" stroke-width="2"/>
+<ellipse class="cr" transform="rotate(135 200 200)" cx="200" cy="155" rx="18" ry="32" fill="white" stroke="#444" stroke-width="2"/>
+<ellipse class="cr" transform="rotate(180 200 200)" cx="200" cy="155" rx="18" ry="32" fill="white" stroke="#444" stroke-width="2"/>
+<ellipse class="cr" transform="rotate(225 200 200)" cx="200" cy="155" rx="18" ry="32" fill="white" stroke="#444" stroke-width="2"/>
+<ellipse class="cr" transform="rotate(270 200 200)" cx="200" cy="155" rx="18" ry="32" fill="white" stroke="#444" stroke-width="2"/>
+<ellipse class="cr" transform="rotate(315 200 200)" cx="200" cy="155" rx="18" ry="32" fill="white" stroke="#444" stroke-width="2"/>
+<path class="cr" transform="rotate(0 200 200)" d="M200,115 Q178,95 178,72 Q200,58 222,72 Q222,95 200,115Z" fill="white" stroke="#444" stroke-width="2"/>
+<path class="cr" transform="rotate(45 200 200)" d="M200,115 Q178,95 178,72 Q200,58 222,72 Q222,95 200,115Z" fill="white" stroke="#444" stroke-width="2"/>
+<path class="cr" transform="rotate(90 200 200)" d="M200,115 Q178,95 178,72 Q200,58 222,72 Q222,95 200,115Z" fill="white" stroke="#444" stroke-width="2"/>
+<path class="cr" transform="rotate(135 200 200)" d="M200,115 Q178,95 178,72 Q200,58 222,72 Q222,95 200,115Z" fill="white" stroke="#444" stroke-width="2"/>
+<path class="cr" transform="rotate(180 200 200)" d="M200,115 Q178,95 178,72 Q200,58 222,72 Q222,95 200,115Z" fill="white" stroke="#444" stroke-width="2"/>
+<path class="cr" transform="rotate(225 200 200)" d="M200,115 Q178,95 178,72 Q200,58 222,72 Q222,95 200,115Z" fill="white" stroke="#444" stroke-width="2"/>
+<path class="cr" transform="rotate(270 200 200)" d="M200,115 Q178,95 178,72 Q200,58 222,72 Q222,95 200,115Z" fill="white" stroke="#444" stroke-width="2"/>
+<path class="cr" transform="rotate(315 200 200)" d="M200,115 Q178,95 178,72 Q200,58 222,72 Q222,95 200,115Z" fill="white" stroke="#444" stroke-width="2"/>
+<circle class="cr" cx="200" cy="200" r="80" fill="none" stroke="#444" stroke-width="1.5" stroke-dasharray="none"/>
+<circle class="cr" cx="200" cy="200" r="130" fill="none" stroke="#444" stroke-width="1.5"/>
+<path class="cr" transform="rotate(22.5 200 200)" d="M200,120 Q178,108 176,88 Q200,80 224,88 Q222,108 200,120Z" fill="white" stroke="#444" stroke-width="1.5"/>
+<path class="cr" transform="rotate(67.5 200 200)" d="M200,120 Q178,108 176,88 Q200,80 224,88 Q222,108 200,120Z" fill="white" stroke="#444" stroke-width="1.5"/>
+<path class="cr" transform="rotate(112.5 200 200)" d="M200,120 Q178,108 176,88 Q200,80 224,88 Q222,108 200,120Z" fill="white" stroke="#444" stroke-width="1.5"/>
+<path class="cr" transform="rotate(157.5 200 200)" d="M200,120 Q178,108 176,88 Q200,80 224,88 Q222,108 200,120Z" fill="white" stroke="#444" stroke-width="1.5"/>
+<path class="cr" transform="rotate(202.5 200 200)" d="M200,120 Q178,108 176,88 Q200,80 224,88 Q222,108 200,120Z" fill="white" stroke="#444" stroke-width="1.5"/>
+<path class="cr" transform="rotate(247.5 200 200)" d="M200,120 Q178,108 176,88 Q200,80 224,88 Q222,108 200,120Z" fill="white" stroke="#444" stroke-width="1.5"/>
+<path class="cr" transform="rotate(292.5 200 200)" d="M200,120 Q178,108 176,88 Q200,80 224,88 Q222,108 200,120Z" fill="white" stroke="#444" stroke-width="1.5"/>
+<path class="cr" transform="rotate(337.5 200 200)" d="M200,120 Q178,108 176,88 Q200,80 224,88 Q222,108 200,120Z" fill="white" stroke="#444" stroke-width="1.5"/>
+<circle class="cr" cx="200" cy="200" r="42" fill="white" stroke="#444" stroke-width="2"/>
+</svg>` }
+];
+
+function initColoring() {
+  renderColorPalette();
+  renderColorScene(colorSceneIdx);
+}
+
+function renderColorPalette() {
+  const palette = document.getElementById('color-palette');
+  palette.innerHTML = '';
+  colorPalette.forEach((c, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'color-swatch' + (c === colorSelected ? ' active' : '');
+    btn.style.background = c;
+    btn.title = c;
+    btn.onclick = () => {
+      colorSelected = c;
+      document.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('active'));
+      btn.classList.add('active');
+    };
+    palette.appendChild(btn);
+  });
+}
+
+function renderColorScene(idx) {
+  const wrap = document.getElementById('coloring-svg-wrap');
+  wrap.innerHTML = colorScenes[idx].svg;
+  colorHistory = [];
+  wrap.querySelectorAll('.cr').forEach(el => {
+    el.style.cursor = 'crosshair';
+    el.addEventListener('click', () => colorRegion(el));
+    el.addEventListener('touchend', (e) => { e.preventDefault(); colorRegion(el); });
+  });
+}
+
+function colorRegion(el) {
+  colorHistory.push({ el, old: el.getAttribute('fill') });
+  el.setAttribute('fill', colorSelected);
+}
+
+function undoColor() {
+  if (!colorHistory.length) return;
+  const last = colorHistory.pop();
+  last.el.setAttribute('fill', last.old);
+}
+
+function resetColoring() {
+  document.querySelectorAll('#coloring-svg-wrap .cr').forEach(el => {
+    if (el.tagName === 'rect' || el.tagName === 'circle' || el.tagName === 'ellipse' || el.tagName === 'path') {
+      el.setAttribute('fill', 'white');
+    }
+  });
+  colorHistory = [];
+}
+
+function nextColorScene() {
+  colorSceneIdx = (colorSceneIdx + 1) % colorScenes.length;
+  renderColorScene(colorSceneIdx);
+}
+
+// ===================== JIGSAW PUZZLE =====================
+let jigsawN = 3, jigsawBoardSize = 320, jigsawPieceW = 0, jigsawPieceH = 0;
+let jigsawDragging = null, jigsawDragOffX = 0, jigsawDragOffY = 0;
+let jigsawPlaced = 0, jigsawTotal = 0, jigsawImageURL = '';
+
+function drawJigsawImage(canvas) {
+  const ctx = canvas.getContext('2d');
+  const w = canvas.width, h = canvas.height;
+  const sky = ctx.createLinearGradient(0, 0, 0, h * 0.62);
+  sky.addColorStop(0, '#64B5F6'); sky.addColorStop(1, '#B3E5FC');
+  ctx.fillStyle = sky; ctx.fillRect(0, 0, w, h);
+  const grd = ctx.createLinearGradient(0, h * 0.58, 0, h);
+  grd.addColorStop(0, '#81C784'); grd.addColorStop(1, '#388E3C');
+  ctx.fillStyle = grd; ctx.fillRect(0, h * 0.58, w, h * 0.42);
+  ctx.fillStyle = '#FFF176';
+  ctx.beginPath(); ctx.arc(w*0.78, h*0.18, w*0.11, 0, Math.PI*2); ctx.fill();
+  ctx.strokeStyle = '#FFD54F'; ctx.lineWidth = Math.max(2, w*0.008);
+  for (let i = 0; i < 8; i++) {
+    const a = (i/8)*Math.PI*2;
+    ctx.beginPath();
+    ctx.moveTo(w*0.78+Math.cos(a)*w*0.13, h*0.18+Math.sin(a)*w*0.13);
+    ctx.lineTo(w*0.78+Math.cos(a)*w*0.17, h*0.18+Math.sin(a)*w*0.17);
+    ctx.stroke();
+  }
+  function cloud(x, y, r) {
+    ctx.fillStyle = 'rgba(255,255,255,0.92)';
+    [0,r*1.1,r*2.1].forEach((dx,i) => {
+      ctx.beginPath(); ctx.arc(x+dx, y-(i===1?r*0.25:0), r*(i===1?0.75:0.65), 0, Math.PI*2); ctx.fill();
+    });
+  }
+  cloud(w*0.08, h*0.2, w*0.07); cloud(w*0.38, h*0.13, w*0.06);
+  ctx.fillStyle = '#4CAF50';
+  ctx.beginPath(); ctx.ellipse(w*0.2, h*0.62, w*0.22, h*0.13, 0, Math.PI, Math.PI*2); ctx.fill();
+  ctx.fillStyle = '#66BB6A';
+  ctx.beginPath(); ctx.ellipse(w*0.62, h*0.6, w*0.26, h*0.15, 0, Math.PI, Math.PI*2); ctx.fill();
+  const flowers = [[w*0.12,h*0.75,'#EF5350'],[w*0.32,h*0.8,'#EC407A'],[w*0.52,h*0.77,'#AB47BC'],[w*0.72,h*0.82,'#FFA726'],[w*0.88,h*0.76,'#EF5350']];
+  flowers.forEach(([fx, fy, fc]) => {
+    ctx.strokeStyle = '#2E7D32'; ctx.lineWidth = Math.max(2,w*0.006);
+    ctx.beginPath(); ctx.moveTo(fx, fy+6); ctx.lineTo(fx, fy+h*0.08); ctx.stroke();
+    for (let i = 0; i < 6; i++) {
+      const a = (i/6)*Math.PI*2;
+      ctx.fillStyle = fc;
+      ctx.beginPath(); ctx.ellipse(fx+Math.cos(a)*w*0.035, fy+Math.sin(a)*w*0.035, w*0.025, w*0.015, a, 0, Math.PI*2); ctx.fill();
+    }
+    ctx.fillStyle = '#FDD835';
+    ctx.beginPath(); ctx.arc(fx, fy, w*0.025, 0, Math.PI*2); ctx.fill();
+  });
+  ctx.fillStyle = '#5D4037'; ctx.fillRect(w*0.46, h*0.3, w*0.06, h*0.3);
+  ctx.fillStyle = '#388E3C';
+  ctx.beginPath(); ctx.arc(w*0.49, h*0.28, w*0.1, 0, Math.PI*2); ctx.fill();
+  ctx.fillStyle = '#4CAF50';
+  ctx.beginPath(); ctx.arc(w*0.44, h*0.34, w*0.07, 0, Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.arc(w*0.54, h*0.34, w*0.07, 0, Math.PI*2); ctx.fill();
+}
+
+function setJigsawDiff(n, btn) {
+  jigsawN = n;
+  btn.closest('.diff-selector').querySelectorAll('.diff-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  initJigsaw();
+}
+
+function initJigsaw() {
+  jigsawBoardSize = Math.min(320, window.innerWidth - 64);
+  jigsawPlaced = 0;
+  jigsawTotal = jigsawN * jigsawN;
+  jigsawPieceW = Math.floor(jigsawBoardSize / jigsawN);
+  jigsawPieceH = Math.floor(jigsawBoardSize / jigsawN);
+  const hc = document.getElementById('jigsaw-hint-canvas');
+  hc.width = jigsawBoardSize; hc.height = jigsawBoardSize;
+  drawJigsawImage(hc);
+  jigsawImageURL = hc.toDataURL();
+  const preview = document.getElementById('jigsaw-preview');
+  preview.src = jigsawImageURL; preview.style.display = 'block';
+  preview.style.maxWidth = '140px';
+  const board = document.getElementById('jigsaw-board');
+  board.style.width = jigsawBoardSize + 'px';
+  board.style.height = jigsawBoardSize + 'px';
+  board.innerHTML = '';
+  document.getElementById('jigsaw-message').textContent = '';
+  const positions = [];
+  for (let r = 0; r < jigsawN; r++)
+    for (let c = 0; c < jigsawN; c++) positions.push({r, c});
+  shuffle(positions);
+  positions.forEach((pos, idx) => {
+    const {r, c} = pos;
+    const piece = document.createElement('div');
+    piece.className = 'jigsaw-piece';
+    piece.dataset.tr = r; piece.dataset.tc = c;
+    piece.style.width = jigsawPieceW + 'px';
+    piece.style.height = jigsawPieceH + 'px';
+    piece.style.backgroundImage = `url(${jigsawImageURL})`;
+    piece.style.backgroundSize = jigsawBoardSize + 'px ' + jigsawBoardSize + 'px';
+    piece.style.backgroundPosition = `-${c * jigsawPieceW}px -${r * jigsawPieceH}px`;
+    const sx = Math.floor(Math.random() * (jigsawBoardSize - jigsawPieceW));
+    const sy = Math.floor(Math.random() * (jigsawBoardSize - jigsawPieceH));
+    piece.style.left = sx + 'px'; piece.style.top = sy + 'px';
+    piece.style.zIndex = idx + 2;
+    piece.addEventListener('mousedown', jigsawMouseDown);
+    piece.addEventListener('touchstart', jigsawTouchStart, { passive: false });
+    board.appendChild(piece);
+  });
+}
+
+function jigsawSnapCheck(piece) {
+  const tx = parseInt(piece.dataset.tc) * jigsawPieceW;
+  const ty = parseInt(piece.dataset.tr) * jigsawPieceH;
+  const cx = parseInt(piece.style.left);
+  const cy = parseInt(piece.style.top);
+  const thresh = jigsawPieceW * 0.32;
+  if (Math.abs(cx - tx) < thresh && Math.abs(cy - ty) < thresh) {
+    piece.style.left = tx + 'px'; piece.style.top = ty + 'px';
+    piece.classList.add('placed'); piece.style.zIndex = 1;
+    jigsawPlaced++;
+    if (jigsawPlaced === jigsawTotal) {
+      document.getElementById('jigsaw-message').textContent = lang === 'es' ? '🎉 ¡Rompecabezas completo!' : '🎉 Puzzle complete!';
+      saveRecord('jigsaw', jigsawPlaced, jigsawTotal);
+      showToast(t('well-done'));
+    }
+    return true;
+  }
+  return false;
+}
+
+function jigsawMouseDown(e) {
+  const piece = e.currentTarget;
+  if (piece.classList.contains('placed')) return;
+  e.preventDefault();
+  const board = document.getElementById('jigsaw-board');
+  const br = board.getBoundingClientRect();
+  jigsawDragging = piece;
+  jigsawDragOffX = e.clientX - br.left - parseInt(piece.style.left);
+  jigsawDragOffY = e.clientY - br.top - parseInt(piece.style.top);
+  piece.classList.add('dragging'); piece.style.zIndex = 1000;
+  document.addEventListener('mousemove', jigsawMouseMove);
+  document.addEventListener('mouseup', jigsawMouseUp);
+}
+
+function jigsawMouseMove(e) {
+  if (!jigsawDragging) return;
+  const br = document.getElementById('jigsaw-board').getBoundingClientRect();
+  let x = e.clientX - br.left - jigsawDragOffX;
+  let y = e.clientY - br.top - jigsawDragOffY;
+  x = Math.max(0, Math.min(jigsawBoardSize - jigsawPieceW, x));
+  y = Math.max(0, Math.min(jigsawBoardSize - jigsawPieceH, y));
+  jigsawDragging.style.left = x + 'px'; jigsawDragging.style.top = y + 'px';
+}
+
+function jigsawMouseUp() {
+  if (!jigsawDragging) return;
+  document.removeEventListener('mousemove', jigsawMouseMove);
+  document.removeEventListener('mouseup', jigsawMouseUp);
+  const piece = jigsawDragging; jigsawDragging = null;
+  piece.classList.remove('dragging');
+  if (!jigsawSnapCheck(piece)) piece.style.zIndex = 2;
+}
+
+function jigsawTouchStart(e) {
+  const piece = e.currentTarget;
+  if (piece.classList.contains('placed')) return;
+  e.preventDefault();
+  const t = e.touches[0];
+  const br = document.getElementById('jigsaw-board').getBoundingClientRect();
+  jigsawDragging = piece;
+  jigsawDragOffX = t.clientX - br.left - parseInt(piece.style.left);
+  jigsawDragOffY = t.clientY - br.top - parseInt(piece.style.top);
+  piece.classList.add('dragging'); piece.style.zIndex = 1000;
+  document.addEventListener('touchmove', jigsawTouchMove, { passive: false });
+  document.addEventListener('touchend', jigsawTouchEnd);
+}
+
+function jigsawTouchMove(e) {
+  if (!jigsawDragging) return;
+  e.preventDefault();
+  const tc = e.touches[0];
+  const br = document.getElementById('jigsaw-board').getBoundingClientRect();
+  let x = tc.clientX - br.left - jigsawDragOffX;
+  let y = tc.clientY - br.top - jigsawDragOffY;
+  x = Math.max(0, Math.min(jigsawBoardSize - jigsawPieceW, x));
+  y = Math.max(0, Math.min(jigsawBoardSize - jigsawPieceH, y));
+  jigsawDragging.style.left = x + 'px'; jigsawDragging.style.top = y + 'px';
+}
+
+function jigsawTouchEnd() {
+  if (!jigsawDragging) return;
+  document.removeEventListener('touchmove', jigsawTouchMove);
+  document.removeEventListener('touchend', jigsawTouchEnd);
+  const piece = jigsawDragging; jigsawDragging = null;
+  piece.classList.remove('dragging');
+  if (!jigsawSnapCheck(piece)) piece.style.zIndex = 2;
+}
+
+// ===================== UTILS =====================
+function shuffle(arr) {
+  for (let i=arr.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[arr[i],arr[j]]=[arr[j],arr[i]];}
+  return arr;
+}
+
+// Hook scramble/wordfill to save records on check
+const _origCheckScr = checkAllScramble;
+checkAllScramble = function() {
+  _origCheckScr();
+  const s = document.querySelector('#scramble-score .score-badge');
+  if (s) {
+    const parts = s.textContent.split(' ');
+    saveRecord('scramble', parseInt(parts[1])||0, parseInt(parts[3])||0);
+  }
+};
+
+const _origCheckWF = checkAllWordFill;
+checkAllWordFill = function() {
+  _origCheckWF();
+  const s = document.querySelector('#wf-score .score-badge');
+  if (s) {
+    const parts = s.textContent.split(' ');
+    saveRecord('wf', parseInt(parts[1])||0, parseInt(parts[3])||0);
+  }
+};
+
+// ===================== INIT =====================
+loadPrefs();
+renderHomeCards();
+applyLang();
+renderDailyQuote();
+renderStreak();
+renderStats();
+
+// ===================== SERVICE WORKER =====================
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js').catch(() => {});
+  });
+}
+</script>
+</body>
+</html>
