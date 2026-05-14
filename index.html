@@ -331,9 +331,28 @@
     padding: 28px;
     border: 1px solid var(--border);
     box-shadow: var(--shadow);
-    overflow-x: hidden;
-    max-width: 100%;
+    overflow-x: auto !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
   }
+
+  /* OVERFLOW GUARD — cannot be overridden */
+  #app-shell { overflow-x: hidden !important; }
+  #ws-grid { font-size: clamp(0.65rem, 3.5vw, 1.1rem) !important; }
+  #ns-grid { font-size: clamp(0.65rem, 3.5vw, 1.1rem) !important; }
+  #ws-container, #ns-container { overflow-x: auto !important; width: 100% !important; max-width: 100% !important; -webkit-overflow-scrolling: touch !important; }
+
+  /* ROTATE TIP */
+  #rotate-tip {
+    position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+    background: rgba(30,58,10,0.88); color: #fff;
+    padding: 12px 22px; border-radius: 30px;
+    font-family: 'Nunito', sans-serif; font-size: 0.9rem;
+    z-index: 9000; pointer-events: none; white-space: nowrap;
+    animation: rotateTipIn 0.4s ease, rotateTipOut 0.5s ease 3.5s forwards;
+  }
+  @keyframes rotateTipIn  { from { opacity:0; transform: translateX(-50%) translateY(12px); } to { opacity:1; transform: translateX(-50%) translateY(0); } }
+  @keyframes rotateTipOut { to   { opacity:0; transform: translateX(-50%) translateY(12px); } }
 
   /* ---- WORD SEARCH ---- */
   #ws-grid {
@@ -379,8 +398,8 @@
     display: grid;
     grid-template-columns: repeat(9, 1fr);
     gap: 2px;
-    max-width: 100%; overflow-x: auto;
-    max-width: 380px;
+    max-width: min(380px, 100%);
+    overflow-x: auto;
     margin: 0 auto 20px;
     background: var(--green);
     padding: 3px;
@@ -422,7 +441,7 @@
   .num-btn.erase { background: #fde8e0; border-color: var(--accent); color: var(--accent); }
 
   /* ---- WORD SCRAMBLE ---- */
-  .scramble-list { max-width: 600px; margin: 0 auto; }
+  .scramble-list { max-width: min(600px, 100%); margin: 0 auto; }
   .scramble-item {
     display: flex; align-items: center; gap: 14px;
     padding: 12px 0;
@@ -500,7 +519,7 @@
   .ns-number.found { text-decoration: line-through; background: var(--green); color: white; border-color: var(--green); }
 
   /* ---- WORD FILL ---- */
-  .wf-clues { max-width: 600px; margin: 0 auto 20px; }
+  .wf-clues { max-width: min(600px, 100%); margin: 0 auto 20px; }
   .wf-clue {
     display: flex; align-items: flex-start; gap: 12px;
     padding: 10px 0;
@@ -663,8 +682,8 @@
     display: grid;
     gap: 10px;
     justify-content: center;
-    max-width: 100%; overflow-x: auto;
-    max-width: 560px;
+    max-width: min(560px, 100%);
+    overflow-x: auto;
     margin: 0 auto 20px;
   }
   .mem-card {
@@ -1615,6 +1634,16 @@ function openPuzzle(id) {
   if (screen) screen.classList.add('active');
   const initMap = { ws: initWordSearch, sudoku: initSudoku, scramble: initScramble, ns: initNumberSearch, wf: initWordFill, nf: initNumberFill, maze: initMaze, cw: initCrossword, mem: initMemory, trivia: initTrivia, breath: initBreath, color: initColoring, jigsaw: initJigsaw };
   if (initMap[id]) initMap[id]();
+  // Rotate tip for portrait mobile
+  if (window.innerHeight > window.innerWidth && window.innerWidth < 768) {
+    const old = document.getElementById('rotate-tip');
+    if (old) old.remove();
+    const tip = document.createElement('div');
+    tip.id = 'rotate-tip';
+    tip.textContent = '📱 Tip: Rotate your phone for a better experience';
+    document.body.appendChild(tip);
+    setTimeout(() => tip.remove(), 4000);
+  }
 }
 
 function goHome() {
