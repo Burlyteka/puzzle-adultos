@@ -7,6 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <!-- PWA Manifest -->
 <link rel="manifest" href="/manifest.json">
@@ -1364,6 +1365,11 @@
 <div id="toast"></div>
 
 <script>
+// ===================== SUPABASE =====================
+const SUPABASE_URL = 'https://reszwwbjqgogtmjigflz.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_5_-_4U0BbIhSDuT8Ao0r2A_qXysGzVG';
+const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
 // ===================== TRANSLATIONS =====================
 const T = {
   es: {
@@ -3689,7 +3695,7 @@ function obSetLang(l) {
   document.getElementById('ob-begin-btn').textContent = l === 'es' ? '¡Empecemos →' : "Let's begin →";
 }
 
-function completeOnboarding() {
+async function completeOnboarding() {
   const input = document.getElementById('ob-name-input');
   const name = (input.value || '').trim();
   if (!name) {
@@ -3697,9 +3703,15 @@ function completeOnboarding() {
     setTimeout(() => input.classList.remove('error'), 400);
     input.focus(); return;
   }
+  const code = localStorage.getItem('pb_code') || '';
+  // Save to localStorage first (works offline too)
   localStorage.setItem('pb_name', name);
   localStorage.setItem('pb_lang', obLang);
   lang = obLang;
+  // Save to Supabase (fire-and-forget, don't block the UI)
+  db.from('serene_users').insert({ code, name, language: obLang }).then(({ error }) => {
+    if (error) console.warn('Supabase insert:', error.message);
+  });
   hideOverlay('onboarding');
   loadHome();
 }
