@@ -86,6 +86,7 @@
     box-shadow: 0 0 60px rgba(0,0,0,0.5);
     position: relative;
     overflow-x: hidden;
+    visibility: hidden;
   }
 
   /* SHARED OVERLAY STYLES */
@@ -981,7 +982,7 @@
     <h1>SereneGrove</h1>
     <p class="ov-sub">Your peaceful mind garden</p>
     <input id="access-code-input" class="ov-input" type="text" maxlength="12"
-      placeholder="Enter your access code" autocomplete="off" spellcheck="false"
+      placeholder="SG-XXXXX" autocomplete="off" spellcheck="false"
       oninput="this.value=this.value.toUpperCase()" onkeydown="if(event.key==='Enter')submitCode()">
     <div class="ov-error" id="access-error"></div>
     <button class="ov-btn" onclick="submitCode()">Enter →</button>
@@ -3696,34 +3697,43 @@ function showCelebration(msg) {
 }
 
 // ===================== ACCESS CODES =====================
-const VALID_CODES = new Set([
-  'CALM-DEMO',
-  'CALM-001','CALM-002','CALM-003','CALM-004','CALM-005',
-  'CALM-006','CALM-007','CALM-008','CALM-009','CALM-010',
-  'CALM-011','CALM-012','CALM-013','CALM-014','CALM-015',
-  'CALM-016','CALM-017','CALM-018','CALM-019','CALM-020',
-  'CALM-021','CALM-022','CALM-023','CALM-024','CALM-025',
-  'CALM-026','CALM-027','CALM-028','CALM-029','CALM-030',
-  'CALM-031','CALM-032','CALM-033','CALM-034','CALM-035',
-  'CALM-036','CALM-037','CALM-038','CALM-039','CALM-040',
-  'CALM-041','CALM-042','CALM-043','CALM-044','CALM-045',
-  'CALM-046','CALM-047','CALM-048','CALM-049','CALM-050'
-]);
-
-function submitCode() {
+async function submitCode() {
   const input = document.getElementById('access-code-input');
   const code = (input.value || '').trim().toUpperCase();
   const errEl = document.getElementById('access-error');
-  if (!VALID_CODES.has(code)) {
+
+  if (!code) {
+    errEl.textContent = lang === 'es' ? 'Ingresa tu código de acceso.' : 'Please enter your access code.';
+    input.focus();
+    return;
+  }
+
+  // Loading state
+  const btn = document.querySelector('#access-screen .ov-btn');
+  btn.textContent = '...';
+  btn.disabled = true;
+  errEl.textContent = '';
+
+  const { data, error } = await db
+    .from('access_codes')
+    .select('code')
+    .eq('code', code)
+    .eq('is_active', true)
+    .single();
+
+  btn.textContent = 'Enter →';
+  btn.disabled = false;
+
+  if (!data || error) {
     errEl.textContent = lang === 'es' ? 'Código inválido. Revisa tu código de acceso.' : 'Invalid code. Please check your access code.';
     input.classList.add('error');
     setTimeout(() => input.classList.remove('error'), 400);
     input.focus();
     return;
   }
+
   errEl.textContent = '';
   localStorage.setItem('pb_code', code);
-  // Animate out the access screen, then show onboarding
   const accEl = document.getElementById('access-screen');
   accEl.classList.add('hiding');
   setTimeout(() => {
@@ -3772,10 +3782,12 @@ async function completeOnboarding() {
   localStorage.setItem('pb_name', capitalized);
   localStorage.setItem('pb_lang', obLang);
   lang = obLang;
-  // Save to Supabase (fire-and-forget, don't block the UI)
-  db.from('serene_users').insert({ code, name: capitalized, language: obLang }).then(({ error }) => {
-    if (error) console.warn('Supabase insert:', error.message);
-  });
+  // Upsert to Supabase: update if code exists, insert if new
+  db.from('serene_users')
+    .upsert({ code, name: capitalized, language: obLang }, { onConflict: 'code' })
+    .then(({ error }) => {
+      if (error) console.warn('Supabase upsert:', error.message);
+    });
   hideOverlay('onboarding');
   loadHome();
 }
@@ -3851,6 +3863,8 @@ if (_pbLang) { lang = _pbLang; }
     // No code — show access screen
     document.getElementById('access-screen').classList.add('visible');
   }
+  // Reveal app shell only after flow decision to prevent flash
+  document.getElementById('app-shell').style.visibility = 'visible';
 })();
 
 // ===================== SERVICE WORKER =====================
