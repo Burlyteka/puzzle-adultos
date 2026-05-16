@@ -1,0 +1,21 @@
+{
+  "name": "SereneGrove — Mindful Activities",
+  "short_name": "SereneGrove",
+  "description": "Mindful activities for adults. Puzzles, sudoku, trivia and more.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#F7F4EF",
+  "theme_color": "#2D5016",
+  "orientation": "portrait-primary",
+  "lang": "en",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["games", "education", "lifestyle"],
+  "screenshots": []
+}
